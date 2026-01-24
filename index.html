@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Terminal</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="terminal">
-        <div id="output"></div>
-        <input type="file" id="file-input" accept="image/*,.pdf,.txt,.docx" multiple hidden>
+    <div class="terminal" id="terminal">
+        <div class="output" id="output"></div>
+        <div class="input-line" id="input-line">
+            <span class="prompt" id="prompt">login> </span>
+            <span class="input" contenteditable="true" id="input" spellcheck="false"></span>
+            <span class="cursor"></span>
+        </div>
     </div>
+    <input type="file" id="file-upload" accept="image/*,.pdf,.txt,.docx,.json" multiple hidden>
     <script src="script.js"></script>
 </body>
 </html>
