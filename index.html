@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Écran de connexion -->
     <div id="login-screen" class="screen">
         <div class="terminal-container">
             <div class="prompt">user@perplexity:~$ </div>
@@ -21,10 +20,9 @@
         </div>
     </div>
 
-    <!-- Interface Terminal Chat -->
     <div id="chat-screen" class="screen hidden">
         <div class="terminal-header">
-            <div>user@perplexity:~$ <span id="model-display">sonar-pro</span></div>
+            <div>user@perplexity:~$ <span id="model-display">SONAR PRO</span></div>
             <button id="model-btn">🤖 Modèles</button>
             <button id="logout">exit</button>
         </div>
@@ -36,15 +34,13 @@
         </div>
     </div>
 
-    <!-- Modal Modèles -->
     <div id="model-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Choisir un modèle :</h3>
             <select id="model-select">
-                <option value="sonar-pro">Sonar Pro (rapide)</option>
-                <option value="llama-3.1-sonar-large-128k-online">Sonar Large + Web (recherche)</option>
-                <option value="llama-3.1-sonar-small-128k-online">Sonar Small (léger)</option>
-                <option value="llama-3.1-sonar-huge-128k-online">Sonar Huge (puissant)</option>
+                <option value="sonar-pro">Sonar Pro</option>
+                <option value="llama-3.1-sonar-large-128k-online">Sonar Large + Web</option>
+                <option value="llama-3.1-sonar-small-128k-online">Sonar Small</option>
             </select>
             <div class="modal-buttons">
                 <button id="confirm-model">OK</button>
@@ -53,6 +49,6 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

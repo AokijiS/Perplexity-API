@@ -1,20 +1,15 @@
-// Hash SHA-256 du mot de passe "#Amine232008" (correct)
-async function sha256(message) {
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+console.log('✅ Script chargé !');
 
-// ✅ VERCEL ENV VAR (prioritaire) ou fallback local
-// Récupère API key depuis URL params (sécurisé pour Vercel Preview) OU fallback
-const urlParams = new URLSearchParams(window.location.search);
-const API_KEY = urlParams.get('api_key') || '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';
-
+// API Key en dur (Vercel env var ne marche pas client-side facilement)
+const API_KEY = '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';
 const API_URL = 'https://api.perplexity.ai/chat/completions';
 let currentModel = 'sonar-pro';
 
-const EXPECTED_PASSWORD_HASH = 'd0e7b3a4c5d6e7f8901234567890abcdef1234567890abcdef1234567890abcd';
+// Identifiants (EN CLAIR pour tester, hash après)
+const USERNAME = 'aokiji';
+const PASSWORD = '#Amine232008';
+
+console.log('🔑 Config chargée - Username:', USERNAME);
 
 const loginScreen = document.getElementById('login-screen');
 const chatScreen = document.getElementById('chat-screen');
@@ -31,34 +26,36 @@ const cancelModel = document.getElementById('cancel-model');
 const modelDisplay = document.getElementById('model-display');
 const loginError = document.getElementById('login-error');
 
-// Login hashé
-loginForm.addEventListener('submit', async (e) => {
+console.log('✅ DOM éléments chargés');
+
+// Login SIMPLE (sans hash)
+loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log('🔐 Tentative de connexion...');
+    
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     
-    loginError.textContent = '🔐 Authentification...';
+    console.log('Username saisi:', username);
+    console.log('Password saisi:', password);
+    console.log('Comparaison:', username === USERNAME, password === PASSWORD);
     
-    try {
-        const passwordHash = await sha256(password);
-        
-        if (username === 'aokiji' && passwordHash === EXPECTED_PASSWORD_HASH) {
-            loginScreen.classList.add('hidden');
-            chatScreen.classList.remove('hidden');
-            loginError.textContent = '';
-            messageInput.focus();
-        } else {
-            loginError.textContent = '❌ Accès refusé';
-            document.getElementById('password').value = '';
-        }
-    } catch (error) {
-        loginError.textContent = '⚠️ Erreur système';
-        console.error(error);
+    if (username === USERNAME && password === PASSWORD) {
+        console.log('✅ LOGIN OK !');
+        loginScreen.classList.add('hidden');
+        chatScreen.classList.remove('hidden');
+        loginError.textContent = '';
+        messageInput.focus();
+    } else {
+        console.log('❌ LOGIN REFUSÉ');
+        loginError.textContent = '❌ Accès refusé';
+        document.getElementById('password').value = '';
     }
 });
 
 // Logout
 logoutBtn.addEventListener('click', () => {
+    console.log('🚪 Déconnexion');
     loginScreen.classList.remove('hidden');
     chatScreen.classList.add('hidden');
     chatMessages.innerHTML = '';
@@ -67,11 +64,15 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // Modèles
-modelBtn.addEventListener('click', () => modelModal.classList.remove('hidden'));
+modelBtn.addEventListener('click', () => {
+    console.log('🤖 Ouvre sélecteur modèles');
+    modelModal.classList.remove('hidden');
+});
 confirmModel.addEventListener('click', () => {
     currentModel = modelSelect.value;
     modelDisplay.textContent = currentModel.replace(/-/g, ' ').toUpperCase();
     modelModal.classList.add('hidden');
+    console.log('🔄 Modèle changé:', currentModel);
 });
 cancelModel.addEventListener('click', () => modelModal.classList.add('hidden'));
 
@@ -83,17 +84,17 @@ async function sendMessage() {
     const message = messageInput.value.trim();
     if (!message) return;
 
-    addMessage('user', `> ${message}`);
+    console.log('📤 Envoi message:', message);
+    addMessage('user', message);
     messageInput.value = '';
     sendBtn.disabled = true;
-    messageInput.placeholder = 'Envoi...';
 
     try {
-        console.log('📡 API Key starts with:', API_KEY.substring(0, 10) + '...'); // Debug Vercel
+        console.log('📡 Appel API Perplexity...');
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${API_KEY}`,
+                'Authorization': 'Bearer ' + API_KEY,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -104,44 +105,51 @@ async function sendMessage() {
             })
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        console.log('📡 Status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erreur API:', errorText);
+            throw new Error('HTTP ' + response.status);
+        }
 
         const data = await response.json();
+        console.log('✅ Réponse reçue:', data);
         typeMessage('bot', data.choices[0].message.content);
     } catch (error) {
-        addMessage('bot', `❌ API Error: ${error.message} (Vérifiez PPLX_API_KEY sur Vercel)`);
-        console.error('Full error:', error);
+        console.error('❌ Erreur complète:', error);
+        addMessage('bot', '❌ Erreur: ' + error.message);
     } finally {
         sendBtn.disabled = false;
-        messageInput.placeholder = 'Tapez votre commande...';
         messageInput.focus();
     }
 }
 
 function addMessage(sender, text) {
     const div = document.createElement('div');
-    div.className = `${sender}-message message`;
-    div.innerHTML = text.replace(/\n/g, '<br>');
+    div.className = sender + '-message message';
+    div.textContent = text;
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function typeMessage(sender, text) {
     const div = document.createElement('div');
-    div.className = `${sender}-message message typing`;
+    div.className = sender + '-message message typing';
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
     let i = 0;
-    const words = text.split(' ');
     const typeInterval = setInterval(() => {
-        if (i < text.length) {
+        if (i <= text.length) {
             div.textContent = text.slice(0, i) + '|';
-            i += 1 + Math.random() * 2; // Vitesse variable
+            i++;
         } else {
             clearInterval(typeInterval);
             div.classList.remove('typing');
-            div.innerHTML = text.replace(/\n/g, '<br>');
+            div.textContent = text;
         }
-    }, 25);
+    }, 20);
 }
+
+console.log('✅ Script entièrement initialisé !');
