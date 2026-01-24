@@ -1,4 +1,4 @@
-// Fonction hash SHA-256 (polyfill crypto si besoin)
+// Fonction hash SHA-256
 async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -9,7 +9,10 @@ async function sha256(message) {
 const API_URL = 'https://api.perplexity.ai/chat/completions';
 let currentModel = 'sonar-pro';
 
-const EXPECTED_PASSWORD_HASH = '8f4e5b3a2d1c9e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3'; 
+// 🔥 MODE DEBUG : Affiche le hash ET teste sans hash temporairement
+const DEBUG_MODE = true;
+const USERNAME = 'aokiji';
+const PASSWORD = '#Amine232008'; // Sera hashé à l'exécution
 
 const loginScreen = document.getElementById('login-screen');
 const chatScreen = document.getElementById('chat-screen');
@@ -26,35 +29,36 @@ const cancelModel = document.getElementById('cancel-model');
 const modelDisplay = document.getElementById('model-display');
 const loginError = document.getElementById('login-error');
 
-// Login avec hash
+// Login DEBUG
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     
-    loginError.textContent = '🔐 Vérification...';
+    loginError.textContent = '🔐 Calcul hash...';
     
     try {
         const passwordHash = await sha256(password);
+        console.log('🔑 DEBUG - Ton hash calculé:', passwordHash); // ← REGARDE ÇA DANS CONSOLE F12 !
         
-        if (username === 'aokiji' && passwordHash === EXPECTED_PASSWORD_HASH) {
+        // 🔥 MODE DEBUG : Accepte TOUS les mots de passe + bon username (supprime ligne 47 après)
+        if (DEBUG_MODE || (username === USERNAME && passwordHash === await sha256(PASSWORD))) {
             loginScreen.classList.add('hidden');
             chatScreen.classList.remove('hidden');
-            loginError.textContent = '✅ Connexion réussie !';
+            loginError.textContent = '✅ Connexion OK !';
             setTimeout(() => loginError.textContent = '', 2000);
             messageInput.focus();
         } else {
-            loginError.textContent = '❌ Identifiants incorrects';
-            // Efface le mot de passe pour sécurité
+            loginError.textContent = `❌ KO - Username: ${username === USERNAME ? 'OK' : 'NO'} | Hash attendu: ${await sha256(PASSWORD)} | Ton hash: ${passwordHash}`;
             document.getElementById('password').value = '';
         }
     } catch (error) {
-        loginError.textContent = '❌ Erreur de vérification';
+        loginError.textContent = '❌ Erreur hash';
         console.error('Hash error:', error);
     }
 });
 
-// Logout
+// Le reste du code (identique)...
 logoutBtn.addEventListener('click', () => {
     loginScreen.classList.remove('hidden');
     chatScreen.classList.add('hidden');
@@ -63,7 +67,6 @@ logoutBtn.addEventListener('click', () => {
     document.getElementById('password').value = '';
 });
 
-// Sélecteur modèles
 modelBtn.addEventListener('click', () => modelModal.classList.remove('hidden'));
 confirmModel.addEventListener('click', () => {
     currentModel = modelSelect.value;
@@ -72,7 +75,6 @@ confirmModel.addEventListener('click', () => {
 });
 cancelModel.addEventListener('click', () => modelModal.classList.add('hidden'));
 
-// Chat
 sendBtn.addEventListener('click', sendMessage);
 messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
@@ -109,7 +111,7 @@ async function sendMessage() {
         const botReply = data.choices[0].message.content;
         typeMessage('bot', botReply);
     } catch (error) {
-        addMessage('bot', `❌ Erreur: ${error.message}. Console pour détails.`);
+        addMessage('bot', `❌ Erreur: ${error.message}`);
         console.error('API Error:', error);
     } finally {
         sendBtn.disabled = false;
@@ -141,5 +143,5 @@ function typeMessage(sender, text) {
             div.classList.remove('typing');
             div.textContent = text;
         }
-    }, 20); // Plus rapide pour réalisme terminal
+    }, 20);
 }
