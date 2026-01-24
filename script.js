@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
 // Remplace par TON hash complet (copie de la console)
-const PASSWORD_HASH = 'd8894d6842a31c16f7b4e4d3c2b1a0f9e8d7c6b5a4d3c2b1a0987654321fedcb';
+const PASSWORD_HASH = 'd8894d6842a31c162c2d0f14ece07bb286d32b5a2f4825c6c8d4f2c1a0ad3166';
 
 //Éléments
     const connectBtn = document.getElementById('connect-btn');
@@ -48,9 +48,6 @@ const PASSWORD_HASH = 'd8894d6842a31c16f7b4e4d3c2b1a0f9e8d7c6b5a4d3c2b1a09876543
             const hashedPassword = await hashPassword(password);
             console.log(`🔐 Hash calculé: ${hashedPassword.substring(0, 16)}...`);
             console.log(`Comparaison: ${username === USERNAME} | ${hashedPassword === PASSWORD_HASH}`);
-// DEBUG TEMPORAIRE - SUPPRIME APRÈS
-console.log('📋 COPIE CE HASH POUR LIGNE 14:', hashedPassword);
-
             
             if (username === USERNAME && hashedPassword === PASSWORD_HASH) {
                 console.log('✅ LOGIN SECURE SUCCESS');
