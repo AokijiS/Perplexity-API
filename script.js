@@ -48,6 +48,9 @@ const PASSWORD_HASH = 'd8894d6842a31c16f7b4e4d3c2b1a0f9e8d7c6b5a4d3c2b1a09876543
             const hashedPassword = await hashPassword(password);
             console.log(`🔐 Hash calculé: ${hashedPassword.substring(0, 16)}...`);
             console.log(`Comparaison: ${username === USERNAME} | ${hashedPassword === PASSWORD_HASH}`);
+// DEBUG TEMPORAIRE - SUPPRIME APRÈS
+console.log('📋 COPIE CE HASH POUR LIGNE 14:', hashedPassword);
+
             
             if (username === USERNAME && hashedPassword === PASSWORD_HASH) {
                 console.log('✅ LOGIN SECURE SUCCESS');
