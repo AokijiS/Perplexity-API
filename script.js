@@ -7,11 +7,13 @@ async function sha256(message) {
 }
 
 // ✅ VERCEL ENV VAR (prioritaire) ou fallback local
-const API_KEY = import.meta.env?.PPLX_API_KEY || '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';
+// Récupère API key depuis URL params (sécurisé pour Vercel Preview) OU fallback
+const urlParams = new URLSearchParams(window.location.search);
+const API_KEY = urlParams.get('api_key') || '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';
+
 const API_URL = 'https://api.perplexity.ai/chat/completions';
 let currentModel = 'sonar-pro';
 
-// ✅ HASH CORRECT de "#Amine232008"
 const EXPECTED_PASSWORD_HASH = 'd0e7b3a4c5d6e7f8901234567890abcdef1234567890abcdef1234567890abcd';
 
 const loginScreen = document.getElementById('login-screen');
