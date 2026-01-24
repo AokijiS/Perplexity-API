@@ -12,7 +12,7 @@ let loginStep = 0; // 0=username, 1=password
 let tempUsername = '';
 let commandHistory = [];
 let historyIndex = -1;
-let uploadedFiles = []; // Persist files now
+let uploadedFiles = []; // Persist files
 let isTyping = false;
 let abortController = null;
 
@@ -24,8 +24,8 @@ const PERSONAS = {
   'code': 'Spécialiste code (Java, JS, Python). Analyse fichiers, commente ligne par ligne, optimise.',
   'game': 'Expert dev jeux Java (FNAF-like), algos IA, mécanique jeux.'
 };
-let currentPersona = PERSONAS['general']; // Default
-let currentModel = 'sonar-pro'; // Default model [web:19]
+let currentPersona = PERSONAS['dev']; // Default dev pour toi
+let currentModel = 'sonar-pro'; // Default model
 
 // === ELEMENTS ===
 const terminal = document.getElementById('terminal');
@@ -60,7 +60,6 @@ function scrollToBottom() {
 // === FOCUS INPUT ===
 function focusInput() {
   input.focus();
-  // Place curseur en fin
   const range = document.createRange();
   const sel = window.getSelection();
   if (input.childNodes.length === 0) {
@@ -75,13 +74,11 @@ function focusInput() {
 
 // === KEYBOARD HANDLER ===
 document.addEventListener('keydown', async (e) => {
-  // Ctrl+K Clear
   if (e.ctrlKey && e.key === 'k') {
     e.preventDefault();
     output.innerHTML = '';
     return;
   }
-  // Ctrl+C Stop AI
   if (e.ctrlKey && e.key === 'c') {
     e.preventDefault();
     if (isTyping) {
@@ -93,7 +90,6 @@ document.addEventListener('keydown', async (e) => {
     focusInput();
     return;
   }
-  // Enter Submit
   if (e.key === 'Enter') {
     e.preventDefault();
     const command = input.textContent.trim();
@@ -105,7 +101,6 @@ document.addEventListener('keydown', async (e) => {
     }
     return;
   }
-  // Arrows History
   if (e.key === 'ArrowUp') {
     e.preventDefault();
     if (authenticated && commandHistory.length > 0) {
@@ -138,7 +133,6 @@ async function handleLogin(value) {
     tempUsername = value;
     prompt.textContent = 'password:';
     loginStep = 1;
-    // Masquer input en mode password
     input.style.webkitTextSecurity = 'disc';
   } else {
     writeLine('password: ********');
@@ -151,7 +145,6 @@ async function handleLogin(value) {
       authenticated = true;
       prompt.textContent = 'user@ai:~$ ';
       input.style.webkitTextSecurity = 'none';
-      currentPersona = PERSONAS['dev']; // Default pour toi (dev Java/Linux)
     } else {
       writeLine('Authentication failed!', 'error');
       writeLine('');
@@ -179,19 +172,16 @@ async function handleCommand(command) {
     writeLine('');
     writeLine('📋 Available commands:', 'system');
     writeLine('  help              Show this help');
-    writeLine('  upload            Upload files/images for AI analysis');
+    writeLine('  upload            Upload files (.java, .txt, images)');
+    writeLine('  readfile [nom]    Preview contenu fichier');
     writeLine('  clear   or Ctrl+K Clear terminal');
     writeLine('  exit              Logout');
-    writeLine('  personas          List & switch IA personalities');
-    writeLine('  setpersona [nom]  Set IA persona (dev, linux, code, game, general)');
+    writeLine('  personas          List personalities');
+    writeLine('  setpersona [nom]  Set IA (dev, linux, code, game, general)');
     writeLine('  models            List models');
-    writeLine('  model [nom]       Switch model (sonar-pro, llama-3.1-sonar-large-128k-online, etc.)');
-    writeLine('  question [txt]    Ask anything to AI');
+    writeLine('  model [nom]       Switch model');
     writeLine('');
-    writeLine('⌨️ Keyboard shortcuts:', 'system');
-    writeLine('  Ctrl+K    Clear screen');
-    writeLine('  Ctrl+C    Stop AI response');
-    writeLine('  ↑↓        Command history');
+    writeLine('⌨️ Shortcuts: Ctrl+K clear, Ctrl+C stop, ↑↓ history', 'system');
     writeLine('');
     return focusInput();
   }
@@ -209,7 +199,7 @@ async function handleCommand(command) {
     authenticated = false;
     loginStep = 0;
     tempUsername = '';
-    uploadedFiles = []; // Reset files
+    uploadedFiles = [];
     prompt.textContent = 'login:';
     return focusInput();
   }
@@ -224,64 +214,73 @@ async function handleCommand(command) {
         uploadedFiles.push({ name: file.name, type: file.type, base64 });
         writeLine(`${file.name} (${(file.size/1024).toFixed(1)}KB) loaded`, 'file');
       }
-      writeLine('📁 Files ready. Ask your question! (ex: "commente ce Java")', 'system');
+      writeLine('📁 Ready! Ask: "commente ce Java" or "readfile JeuDeLaVie.java"', 'system');
       writeLine('');
-      e.target.value = ''; // Reset
+      e.target.value = '';
       focusInput();
     };
     return;
   }
 
-  // Personas
-  if (command === 'personas') {
-    writeLine('🧠 Available personas:', 'system');
-    Object.entries(PERSONAS).forEach(([key, desc]) => {
-      const active = currentPersona === desc ? ' (current)' : '';
-      writeLine(`  ${key.padEnd(10)} ${active}`, 'system');
-    });
-    writeLine('Use: setpersona dev');
+  // Readfile
+  if (command.startsWith('readfile ')) {
+    const fileName = command.split(' ').slice(1).join(' ');
+    const file = uploadedFiles.find(f => f.name.toLowerCase().includes(fileName.toLowerCase()));
+    if (file) {
+      getFileTextContent(file.base64).then(content => {
+        writeLine(`📄 ${file.name}:\n${content.substring(0, 800)}...`, 'file');
+      }).catch(() => writeLine('❌ Cannot read file', 'error'));
+    } else {
+      writeLine(`❌ No file "${fileName}"`, 'error');
+    }
     return focusInput();
   }
 
+  // Personas
+  if (command === 'personas') {
+    writeLine('🧠 Personas:', 'system');
+    Object.entries(PERSONAS).forEach(([key, desc]) => {
+      const active = currentPersona === PERSONAS[key] ? ' (active)' : '';
+      writeLine(`  ${key.padEnd(10)} ${active}`, 'system');
+    });
+    writeLine('→ setpersona dev');
+    return focusInput();
+  }
   if (command.startsWith('setpersona ')) {
-    const personaName = command.split(' ')[1];
-    if (PERSONAS[personaName]) {
-      currentPersona = PERSONAS[personaName];
-      writeLine(`✅ Persona set to "${personaName}"`, 'success');
+    const name = command.split(' ')[1];
+    if (PERSONAS[name]) {
+      currentPersona = PERSONAS[name];
+      writeLine(`✅ Persona: ${name}`, 'success');
     } else {
-      writeLine('❌ Unknown persona. See "personas"', 'error');
+      writeLine('❌ Unknown. See "personas"', 'error');
     }
     return focusInput();
   }
 
   // Models
   if (command === 'models') {
-    const models = [
-      'sonar-pro', 'llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-small-32k-online',
-      'llama-3.1-sonar-small-128k-online', 'llama-3.2-sonar-small-128k-online', 'llama-3.2-sonar-large-128k-online'
-    ]; // Modèles Perplexity 2026 [web:19]
-    writeLine('🤖 Available models:', 'system');
+    const models = ['sonar-pro', 'llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-small-32k-online', 'llama-3.1-sonar-small-128k-online', 'llama-3.2-sonar-small-128k-online', 'llama-3.2-sonar-large-128k-online'];
+    writeLine('🤖 Models:', 'system');
     models.forEach(m => {
-      const active = currentModel === m ? ' (current)' : '';
+      const active = currentModel === m ? ' (active)' : '';
       writeLine(`  ${m}${active}`, 'system');
     });
-    writeLine('Use: model sonar-pro');
+    writeLine('→ model sonar-pro');
     return focusInput();
   }
-
   if (command.startsWith('model ')) {
-    const modelName = command.split(' ')[1];
-    const validModels = ['sonar-pro', 'llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-small-32k-online', 'llama-3.1-sonar-small-128k-online', 'llama-3.2-sonar-small-128k-online', 'llama-3.2-sonar-large-128k-online'];
-    if (validModels.includes(modelName)) {
-      currentModel = modelName;
-      writeLine(`✅ Model set to "${modelName}"`, 'success');
+    const name = command.split(' ')[1];
+    const valid = ['sonar-pro', 'llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-small-32k-online', 'llama-3.1-sonar-small-128k-online', 'llama-3.2-sonar-small-128k-online', 'llama-3.2-sonar-large-128k-online'];
+    if (valid.includes(name)) {
+      currentModel = name;
+      writeLine(`✅ Model: ${name}`, 'success');
     } else {
-      writeLine('❌ Unknown model. See "models"', 'error');
+      writeLine('❌ Unknown. See "models"', 'error');
     }
     return focusInput();
   }
 
-  // Ask AI (question ou commande directe)
+  // Ask AI
   await askAI(command);
 }
 
@@ -295,31 +294,62 @@ function fileToBase64(file) {
   });
 }
 
-// === ASK AI (FIX FILES + PERSONA + MODEL) ===
+// === EXTRAIT TEXTE DE BASE64 ===
+function getFileTextContent(base64Data) {
+  return new Promise((resolve, reject) => {
+    try {
+      const byteCharacters = atob(base64Data.split(',')[1]);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'text/plain;charset=utf-8' });
+      
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Cannot read as text'));
+      reader.readAsText(blob);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+// === ASK AI (FIX FICHIERS TEXTE COMPLET) ===
 async function askAI(question) {
   writeLine(`🤖 AI thinking...`, 'typing');
   isTyping = true;
   abortController = new AbortController();
 
-  // Build content
-  const messages = [
-    { role: 'system', content: currentPersona }, // Persona appliqué !
-    { role: 'user', content: question }
-  ];
+  let fullPrompt = question;
+  let usedFiles = [];
 
-  // Ajoute TOUS les fichiers uploadés (pas que images)
+  // Lis CONTENU TEXTE des fichiers
   if (uploadedFiles.length > 0) {
     writeLine(`📎 Using ${uploadedFiles.length} file(s): ${uploadedFiles.map(f => f.name).join(', ')}`, 'file');
-    uploadedFiles.forEach(file => {
-      messages[1].content += `\n\n--- Fichier: ${file.name} (${file.type}) ---`;
-      if (file.type.startsWith('image/')) {
-        messages.push({ type: 'image_url', image_url: { url: file.base64 } });
-      } else {
-        // Pour texte/code (Java, etc.), on assume base64 décodable comme text
-        messages[1].content += `\nContenu base64 (décoder pour voir): ${file.base64.substring(0, 100)}...`;
+    for (const fileData of uploadedFiles) {
+      try {
+        const textContent = await getFileTextContent(fileData.base64);
+        fullPrompt += `\n\n--- FICHIER: ${fileData.name} (${fileData.type}) ---\n${textContent}\n--- FIN FICHIER ---`;
+        usedFiles.push(fileData.name);
+      } catch (e) {
+        writeLine(`⚠️ Skip ${fileData.name}: ${e.message}`, 'warning');
       }
-    });
+    }
   }
+
+  const messages = [
+    { role: 'system', content: currentPersona },
+    { role: 'user', content: fullPrompt }
+  ];
+
+  // Images séparées
+  uploadedFiles.forEach(fileData => {
+    if (fileData.type.startsWith('image/')) {
+      messages.push({ type: 'image_url', image_url: { url: fileData.base64 } });
+    }
+  });
 
   try {
     const response = await fetch(APIURL, {
@@ -329,7 +359,7 @@ async function askAI(question) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: currentModel,  // Nouveau model dynamique !
+        model: currentModel,
         messages,
         max_tokens: 4000,
         temperature: 0.7,
@@ -341,6 +371,12 @@ async function askAI(question) {
 
     const data = await response.json();
     await typeText(data.choices[0].message.content);
+    
+    // Nettoie fichiers utilisés
+    if (usedFiles.length > 0) {
+      uploadedFiles = uploadedFiles.filter(f => !usedFiles.includes(f.name));
+      writeLine(`🗑️ Cleared ${usedFiles.length} used file(s)`, 'system');
+    }
   } catch (err) {
     if (err.name === 'AbortError') {
       writeLine('Request aborted.', 'warning');
