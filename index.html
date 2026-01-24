@@ -4,33 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Terminal</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="terminal" class="terminal">
-        <div class="header">
-            <span>user@ai-terminal:~ $ <span id="status">READY</span></span>
-            <span id="model-display">sonar-pro</span>
-        </div>
-        
-        <!-- LOGIN -->
-        <div id="login-screen">
-            <div class="login-prompt">auth> </div>
-            <input type="text" id="username" placeholder="username" maxlength="20">
-            <input type="password" id="password" placeholder="password" maxlength="50">
-            <button id="login-btn">connect</button>
-            <div id="login-msg"></div>
-        </div>
-
-        <!-- CHAT TERMINAL -->
-        <div id="chat-screen" class="hidden">
-            <div id="messages"></div>
-            <div class="input-line">
-                <span class="prompt" id="prompt">user@ai:~$ </span>
-                <input type="text" id="input" placeholder="entrez commande...">
-            </div>
-        </div>
+    <div id="terminal">
+        <div id="output"></div>
+        <input type="file" id="file-input" accept="image/*,.pdf,.txt,.docx" multiple hidden>
     </div>
     <script src="script.js"></script>
 </body>

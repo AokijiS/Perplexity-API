@@ -5,169 +5,84 @@ body {
     color: #0f0; 
     font-family: 'IBM Plex Mono', monospace; 
     font-size: 16px; 
-    height: 100vh; 
+    line-height: 1.5;
     overflow: hidden;
 }
 
-.terminal { 
+#terminal { 
     height: 100vh; 
-    max-width: 1200px; 
-    margin: 0 auto; 
-    background: #000; 
-    border: 2px solid #0f0; 
-    box-shadow: 
-        0 0 50px rgba(0,255,0,0.5),
-        inset 0 0 50px rgba(0,0,0,0.8);
-    display: flex; 
-    flex-direction: column;
-    position: relative;
-}
-
-/* SCANLINES */
-.terminal::before {
-    content: ''; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    height: 2px; 
-    background: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,255,0,0.1) 1px, rgba(0,255,0,0.1) 2px); 
-    box-shadow: 0 0 10px rgba(0,255,0,0.3);
-    animation: scanline 3s linear infinite;
-}
-@keyframes scanline { 0% { top: 0; } 100% { top: 100%; } }
-
-.header { 
-    background: rgba(0,20,0,0.9); 
-    padding: 10px 20px; 
-    border-bottom: 1px solid #0f0; 
-    font-size: 14px; 
-    display: flex; 
-    justify-content: space-between; 
-    text-shadow: 0 0 10px #0f0;
-}
-
-#model-display { color: #0ff; font-weight: 500; }
-
-#login-screen, #chat-screen { 
-    flex: 1; 
-    padding: 30px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 20px;
-}
-
-.hidden { display: none !important; }
-
-.login-prompt { 
-    color: #ff0; 
-    font-weight: 700; 
-    font-size: 18px; 
-    text-shadow: 0 0 10px #ff0;
-}
-
-#username, #password, #input { 
-    background: rgba(0,0,0,0.8); 
-    border: 2px solid #333; 
-    color: #fff; 
-    padding: 15px 20px; 
-    font-family: inherit; 
-    font-size: 16px; 
-    border-radius: 4px;
-    flex: 1;
-}
-#username:focus, #password:focus, #input:focus { 
-    outline: none; 
-    border-color: #0f0; 
-    box-shadow: 0 0 20px rgba(0,255,0,0.5);
-}
-#username::placeholder, #password::placeholder, #input::placeholder { color: #666; }
-
-#login-btn { 
-    background: linear-gradient(45deg, #0f0, #0a0); 
-    color: #000; 
-    border: none; 
-    padding: 15px 40px; 
-    font-family: inherit; 
-    font-size: 16px; 
-    font-weight: 700; 
-    cursor: pointer; 
-    border-radius: 4px; 
-    text-transform: uppercase; 
-    letter-spacing: 2px;
-    box-shadow: 0 0 20px rgba(0,255,0,0.5);
-    transition: all 0.3s;
-}
-#login-btn:hover { 
-    background: linear-gradient(45deg, #0a0, #0f0); 
-    box-shadow: 0 0 30px rgba(0,255,0,0.8);
-    transform: scale(1.05);
-}
-
-#login-msg, .system-msg { 
-    color: #ff0; 
-    font-weight: 500; 
-    font-size: 14px; 
-    text-align: center;
-    padding: 10px;
-}
-
-#messages { 
-    flex: 1; 
+    padding: 20px; 
     overflow-y: auto; 
-    padding-right: 20px;
-    scrollbar-width: thin; 
-    scrollbar-color: #0f0 transparent;
+    background: #000;
+    cursor: text;
 }
-#messages::-webkit-scrollbar { width: 6px; }
-#messages::-webkit-scrollbar-track { background: transparent; }
-#messages::-webkit-scrollbar-thumb { background: #0f0; border-radius: 3px; opacity: 0.5; }
 
-.message { 
-    margin-bottom: 15px; 
-    padding: 15px 20px; 
-    background: rgba(0,255,0,0.05); 
-    border-left: 4px solid #0f0; 
-    border-radius: 0 6px 6px 0; 
-    max-width: 90%; 
+#terminal::-webkit-scrollbar { width: 8px; }
+#terminal::-webkit-scrollbar-track { background: #000; }
+#terminal::-webkit-scrollbar-thumb { background: #0f0; opacity: 0.3; }
+
+#output { 
     white-space: pre-wrap; 
-    line-height: 1.5;
-    animation: messageIn 0.4s ease-out;
-    box-shadow: 0 0 10px rgba(0,255,0,0.2);
-}
-.user-message { 
-    margin-left: auto; 
-    background: rgba(0,255,255,0.1); 
-    border-left-color: #0ff; 
-    border-radius: 6px 0 6px 6px;
-    text-align: right;
-}
-@keyframes messageIn { from { opacity: 0; transform: translateY(20px); } }
-
-.typing { position: relative; }
-.typing::after { content: '█'; animation: blink 0.5s infinite; color: #0f0; }
-
-.input-line { 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    padding: 20px 0 20px 0; 
-    border-top: 1px solid #0f0;
+    word-wrap: break-word;
 }
 
-#prompt { 
+.line { 
+    margin-bottom: 5px;
+    animation: fadeIn 0.2s;
+}
+@keyframes fadeIn { from { opacity: 0; } }
+
+.prompt { 
     color: #0ff; 
-    font-weight: 700; 
-    font-size: 17px; 
-    text-shadow: 0 0 10px #0ff;
-    animation: promptGlow 2s ease-in-out infinite alternate;
-}
-@keyframes promptGlow { 
-    0% { text-shadow: 0 0 10px #0ff; } 
-    100% { text-shadow: 0 0 25px #0ff, 0 0 35px #0ff; } 
+    font-weight: 700;
 }
 
-@media (max-width: 768px) { 
-    .terminal { margin: 5px; font-size: 14px; } 
-    #messages { padding-right: 10px; }
+.user-input { 
+    color: #fff;
+    display: inline;
+}
+
+.response { 
+    color: #0f0; 
+    margin: 10px 0 10px 0;
+    padding-left: 0;
+}
+
+.error { 
+    color: #f00;
+}
+
+.system { 
+    color: #ff0;
+}
+
+.file-info {
+    color: #0cf;
+    margin: 5px 0;
+}
+
+.cursor { 
+    display: inline-block;
+    width: 10px;
+    height: 18px;
+    background: #0f0;
+    animation: blink 1s infinite;
+    vertical-align: text-bottom;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.input-line {
+    display: flex;
+    align-items: baseline;
+}
+
+#input-field {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    flex: 1;
+    caret-color: #0f0;
 }
