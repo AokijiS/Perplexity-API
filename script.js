@@ -1,9 +1,15 @@
-console.log('🔥 TERMINAL SECURE v4');
+console.log('🖥️ AI TERMINAL v6 - Vercel PPLX_API_KEY');
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('✅ DOM chargé');
+    // VERCEL ENV + fallback
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Méthode Vercel client-side (via meta ou URL)
+    const metaKey = document.querySelector('meta[name="PPLX_API_KEY"]')?.content;
+    const API_KEY = metaKey || urlParams.get('key') || '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';
+    
+    console.log('🔑 API PPLX chargée:', API_KEY.substring(0, 10) + '...');
 
-    // HASH SHA-256
     async function hashPassword(password) {
         const encoder = new TextEncoder();
         const data = encoder.encode(password);
@@ -12,130 +18,103 @@ document.addEventListener('DOMContentLoaded', async () => {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // 🔥 TON HASH EXACT
     const PASSWORD_HASH = 'd8894d6842a31c162c2d0f14ece07bb286d32b5a2f4825c6c8d4f2c1a0ad3166';
     const USERNAME = 'aokiji';
-    const API_KEY = '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';
     const API_URL = 'https://api.perplexity.ai/chat/completions';
     let currentModel = 'sonar-pro';
 
-    // Éléments
-    const connectBtn = document.getElementById('connect-btn');
+    const loginBtn = document.getElementById('login-btn');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
-    const loginError = document.getElementById('login-error');
-    const loginSection = document.getElementById('login-section');
-    const chatSection = document.getElementById('chat-section');
+    const loginMsg = document.getElementById('login-msg');
+    const loginScreen = document.getElementById('login-screen');
+    const chatScreen = document.getElementById('chat-screen');
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
     const status = document.getElementById('status');
-    const modelInfo = document.getElementById('model-info');
-    const aiSelect = document.getElementById('ai-select');
-    const fileBtn = document.querySelector('.file-btn');
-    const fileUpload = document.getElementById('file-upload');
+    const modelDisplay = document.getElementById('model-display');
 
-    // LOGIN
-    connectBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        loginError.textContent = '🔐 VÉRIFICATION...';
-        
+    loginBtn.onclick = async () => {
+        loginMsg.textContent = '🔐 AUTH...';
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
         
-        try {
-            const hashedPassword = await hashPassword(password);
-            console.log('Hash calculé:', hashedPassword.substring(0, 16) + '...');
-            
-            if (username === USERNAME && hashedPassword === PASSWORD_HASH) {
-                console.log('✅ LOGIN OK');
-                loginSection.style.display = 'none';
-                chatSection.style.display = 'flex';
-                loginError.textContent = '✅ SÉCURISÉ';
-                setTimeout(() => loginError.textContent = '', 1000);
-                input.focus();
-                status.textContent = 'ONLINE';
-            } else {
-                loginError.textContent = '❌ REFUSÉ';
-                passwordInput.value = '';
-            }
-        } catch (err) {
-            loginError.textContent = '❌ ERREUR';
-            console.error(err);
+        const hash = await hashPassword(password);
+        
+        if (username === USERNAME && hash === PASSWORD_HASH) {
+            loginMsg.textContent = '✅ SECURE';
+            loginScreen.classList.add('hidden');
+            chatScreen.classList.remove('hidden');
+            status.textContent = 'ONLINE';
+            input.focus();
+            addMessage('system', 'AI Terminal prêt. Tapez votre question.');
+        } else {
+            loginMsg.textContent = '❌ REFUSÉ';
+            passwordInput.value = '';
         }
-    });
+    };
 
-    // UPLOAD
-    fileBtn.addEventListener('click', () => fileUpload.click());
-    fileUpload.addEventListener('change', (e) => {
-        Array.from(e.target.files).forEach(file => {
-            addMessage('user', `📎 ${file.name}`);
-        });
-    });
-
-    // AI SELECT
-    aiSelect.addEventListener('change', (e) => {
-        currentModel = e.target.value;
-        modelInfo.textContent = e.target.value.toUpperCase();
-    });
-
-    // CHAT
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && input.value.trim()) sendMessage();
-    });
-
-    function sendMessage() {
-        const text = input.value.trim();
-        addMessage('user', text);
-        input.value = '';
-        status.textContent = 'ENVOI...';
-
-        fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: currentModel,
-                messages: [{ role: 'user', content: text }],
-                max_tokens: 2000,
-                temperature: 0.7
+    input.onkeypress = (e) => {
+        if (e.key === 'Enter' && input.value.trim()) {
+            const question = input.value.trim();
+            const command = `user@ai:~$ ${question}`;
+            
+            addMessage('user', command);
+            input.value = '';
+            status.textContent = 'thinking...';
+            
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: currentModel,
+                    messages: [{ role: 'user', content: question }],
+                    max_tokens: 3000,
+                    temperature: 0.7
+                })
             })
-        }).then(res => {
-            if (!res.ok) throw new Error(res.status);
-            return res.json();
-        }).then(data => {
-            typeMessage('ai', data.choices[0].message.content);
-            status.textContent = 'READY';
-        }).catch(err => {
-            addMessage('ai', `❌ ${err.message}`);
-            status.textContent = 'ERROR';
-        });
-    }
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => {
+                typeMessage('ai', data.choices[0].message.content);
+                status.textContent = 'ready';
+            })
+            .catch(err => {
+                addMessage('ai', `❌ ${err.message}`);
+                status.textContent = 'error';
+            });
+        }
+    };
 
-    function addMessage(sender, text) {
+    function addMessage(type, text) {
         const div = document.createElement('div');
-        div.className = `${sender}-message message`;
+        div.className = `${type}-message message`;
         div.textContent = text;
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
     }
 
-    function typeMessage(sender, text) {
+    function typeMessage(type, text) {
         const div = document.createElement('div');
-        div.className = `${sender}-message message typing`;
+        div.className = `${type}-message message typing`;
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
+        
         let i = 0;
-        const timer = setInterval(() => {
-            div.textContent = text.slice(0, i++) + '_';
+        const int = setInterval(() => {
+            div.textContent = text.slice(0, i++) + '█';
             if (i > text.length) {
-                clearInterval(timer);
+                clearInterval(int);
                 div.classList.remove('typing');
                 div.textContent = text;
             }
         }, 25);
     }
 
-    console.log('🎉 TERMINAL PRÊT - Hash sécurisé');
+    console.log('✅ TERMINAL VERCEL PRÊT');
 });
