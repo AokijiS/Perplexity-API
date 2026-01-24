@@ -12,9 +12,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
     
-	const PASSWORD_HASH = 'd8894d6842a31c16f7b4e4d3c2b1a0f9e8d7c6b5a4d3c2b1a0987654321fedcb';
-    
-    // Éléments
+// Remplace par TON hash complet (copie de la console)
+const PASSWORD_HASH = 'd8894d6842a31c16f7b4e4d3c2b1a0f9e8d7c6b5a4d3c2b1a0987654321fedcb';
+
+//Éléments
     const connectBtn = document.getElementById('connect-btn');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
