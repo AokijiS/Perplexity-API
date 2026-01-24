@@ -12,8 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
     
-    // Hash pré-calculé de "#Amine232008"
-    const PASSWORD_HASH = '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069';
+	const PASSWORD_HASH = 'd8894d6842a31c16f7b4e4d3c2b1a0f9e8d7c6b5a4d3c2b1a0987654321fedcb';
     
     // Éléments
     const connectBtn = document.getElementById('connect-btn');
