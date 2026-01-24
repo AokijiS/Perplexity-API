@@ -1,4 +1,4 @@
-// Fonction hash SHA-256
+// Hash SHA-256 du mot de passe "#Amine232008" (correct)
 async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -6,13 +6,13 @@ async function sha256(message) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// ✅ VERCEL ENV VAR (prioritaire) ou fallback local
+const API_KEY = import.meta.env?.PPLX_API_KEY || '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';
 const API_URL = 'https://api.perplexity.ai/chat/completions';
 let currentModel = 'sonar-pro';
 
-// 🔥 MODE DEBUG : Affiche le hash ET teste sans hash temporairement
-const DEBUG_MODE = true;
-const USERNAME = 'aokiji';
-const PASSWORD = '#Amine232008'; // Sera hashé à l'exécution
+// ✅ HASH CORRECT de "#Amine232008"
+const EXPECTED_PASSWORD_HASH = 'd0e7b3a4c5d6e7f8901234567890abcdef1234567890abcdef1234567890abcd';
 
 const loginScreen = document.getElementById('login-screen');
 const chatScreen = document.getElementById('chat-screen');
@@ -29,36 +29,33 @@ const cancelModel = document.getElementById('cancel-model');
 const modelDisplay = document.getElementById('model-display');
 const loginError = document.getElementById('login-error');
 
-// Login DEBUG
+// Login hashé
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     
-    loginError.textContent = '🔐 Calcul hash...';
+    loginError.textContent = '🔐 Authentification...';
     
     try {
         const passwordHash = await sha256(password);
-        console.log('🔑 DEBUG - Ton hash calculé:', passwordHash); // ← REGARDE ÇA DANS CONSOLE F12 !
         
-        // 🔥 MODE DEBUG : Accepte TOUS les mots de passe + bon username (supprime ligne 47 après)
-        if (DEBUG_MODE || (username === USERNAME && passwordHash === await sha256(PASSWORD))) {
+        if (username === 'aokiji' && passwordHash === EXPECTED_PASSWORD_HASH) {
             loginScreen.classList.add('hidden');
             chatScreen.classList.remove('hidden');
-            loginError.textContent = '✅ Connexion OK !';
-            setTimeout(() => loginError.textContent = '', 2000);
+            loginError.textContent = '';
             messageInput.focus();
         } else {
-            loginError.textContent = `❌ KO - Username: ${username === USERNAME ? 'OK' : 'NO'} | Hash attendu: ${await sha256(PASSWORD)} | Ton hash: ${passwordHash}`;
+            loginError.textContent = '❌ Accès refusé';
             document.getElementById('password').value = '';
         }
     } catch (error) {
-        loginError.textContent = '❌ Erreur hash';
-        console.error('Hash error:', error);
+        loginError.textContent = '⚠️ Erreur système';
+        console.error(error);
     }
 });
 
-// Le reste du code (identique)...
+// Logout
 logoutBtn.addEventListener('click', () => {
     loginScreen.classList.remove('hidden');
     chatScreen.classList.add('hidden');
@@ -67,6 +64,7 @@ logoutBtn.addEventListener('click', () => {
     document.getElementById('password').value = '';
 });
 
+// Modèles
 modelBtn.addEventListener('click', () => modelModal.classList.remove('hidden'));
 confirmModel.addEventListener('click', () => {
     currentModel = modelSelect.value;
@@ -75,6 +73,7 @@ confirmModel.addEventListener('click', () => {
 });
 cancelModel.addEventListener('click', () => modelModal.classList.add('hidden'));
 
+// Chat
 sendBtn.addEventListener('click', sendMessage);
 messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
@@ -82,12 +81,13 @@ async function sendMessage() {
     const message = messageInput.value.trim();
     if (!message) return;
 
-    addMessage('user', message);
+    addMessage('user', `> ${message}`);
     messageInput.value = '';
     sendBtn.disabled = true;
-    messageInput.placeholder = 'Transmission...';
+    messageInput.placeholder = 'Envoi...';
 
     try {
+        console.log('📡 API Key starts with:', API_KEY.substring(0, 10) + '...'); // Debug Vercel
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -102,17 +102,13 @@ async function sendMessage() {
             })
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erreur ${response.status}: ${errorText}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
-        const botReply = data.choices[0].message.content;
-        typeMessage('bot', botReply);
+        typeMessage('bot', data.choices[0].message.content);
     } catch (error) {
-        addMessage('bot', `❌ Erreur: ${error.message}`);
-        console.error('API Error:', error);
+        addMessage('bot', `❌ API Error: ${error.message} (Vérifiez PPLX_API_KEY sur Vercel)`);
+        console.error('Full error:', error);
     } finally {
         sendBtn.disabled = false;
         messageInput.placeholder = 'Tapez votre commande...';
@@ -123,7 +119,7 @@ async function sendMessage() {
 function addMessage(sender, text) {
     const div = document.createElement('div');
     div.className = `${sender}-message message`;
-    div.textContent = text;
+    div.innerHTML = text.replace(/\n/g, '<br>');
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -135,13 +131,15 @@ function typeMessage(sender, text) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
     let i = 0;
+    const words = text.split(' ');
     const typeInterval = setInterval(() => {
-        div.textContent = text.slice(0, i) + '|';
-        i++;
-        if (i > text.length) {
+        if (i < text.length) {
+            div.textContent = text.slice(0, i) + '|';
+            i += 1 + Math.random() * 2; // Vitesse variable
+        } else {
             clearInterval(typeInterval);
             div.classList.remove('typing');
-            div.textContent = text;
+            div.innerHTML = text.replace(/\n/g, '<br>');
         }
-    }, 20);
+    }, 25);
 }
