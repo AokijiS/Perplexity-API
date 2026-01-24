@@ -1,155 +1,123 @@
-console.log('✅ Script chargé !');
+console.log('🚀 AI Terminal v2.0 chargé !');
 
-// API Key en dur (Vercel env var ne marche pas client-side facilement)
-const API_KEY = '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';
-const API_URL = 'https://api.perplexity.ai/chat/completions';
-let currentModel = 'sonar-pro';
+const API_KEYS = {
+    perplexity: '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',
+    claude: 'sk-proj-ANTHROPIC_KEY_REQUIRED', // Ajoute ta clé Claude
+    gpt: 'sk-openai-key-required' // Ajoute ta clé OpenAI
+};
 
-// Identifiants (EN CLAIR pour tester, hash après)
+const API_URLS = {
+    perplexity: 'https://api.perplexity.ai/chat/completions',
+    claude: 'https://api.anthropic.com/v1/messages',
+    gpt: 'https://api.openai.com/v1/chat/completions'
+};
+
 const USERNAME = 'aokiji';
 const PASSWORD = '#Amine232008';
+let currentAI = 'perplexity';
 
-console.log('🔑 Config chargée - Username:', USERNAME);
-
-const loginScreen = document.getElementById('login-screen');
-const chatScreen = document.getElementById('chat-screen');
-const loginForm = document.getElementById('login-form');
-const chatMessages = document.getElementById('chat-messages');
-const messageInput = document.getElementById('message-input');
-const sendBtn = document.getElementById('send-btn');
-const logoutBtn = document.getElementById('logout');
-const modelBtn = document.getElementById('model-btn');
-const modelModal = document.getElementById('model-modal');
-const modelSelect = document.getElementById('model-select');
-const confirmModel = document.getElementById('confirm-model');
-const cancelModel = document.getElementById('cancel-model');
-const modelDisplay = document.getElementById('model-display');
+const loginSection = document.getElementById('login-section');
+const chatSection = document.getElementById('chat-section');
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
+const aiSelect = document.getElementById('ai-select');
+const fileUpload = document.getElementById('file-upload');
 const loginError = document.getElementById('login-error');
+const modelInfo = document.getElementById('model-info');
+const status = document.getElementById('status');
 
-console.log('✅ DOM éléments chargés');
-
-// Login SIMPLE (sans hash)
-loginForm.addEventListener('submit', (e) => {
+// Login simple
+document.getElementById('login-form').onsubmit = (e) => {
     e.preventDefault();
-    console.log('🔐 Tentative de connexion...');
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
     
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
-    
-    console.log('Username saisi:', username);
-    console.log('Password saisi:', password);
-    console.log('Comparaison:', username === USERNAME, password === PASSWORD);
-    
-    if (username === USERNAME && password === PASSWORD) {
-        console.log('✅ LOGIN OK !');
-        loginScreen.classList.add('hidden');
-        chatScreen.classList.remove('hidden');
-        loginError.textContent = '';
-        messageInput.focus();
+    if (user === USERNAME && pass === PASSWORD) {
+        loginSection.classList.remove('active');
+        chatSection.classList.remove('hidden');
+        input.focus();
     } else {
-        console.log('❌ LOGIN REFUSÉ');
         loginError.textContent = '❌ Accès refusé';
-        document.getElementById('password').value = '';
     }
-});
+};
 
-// Logout
-logoutBtn.addEventListener('click', () => {
-    console.log('🚪 Déconnexion');
-    loginScreen.classList.remove('hidden');
-    chatScreen.classList.add('hidden');
-    chatMessages.innerHTML = '';
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-});
+// Upload fichier
+fileUpload.onchange = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => addMessage('user', `📎 ${file.name} (${(file.size/1024).toFixed(1)}KB) chargé`);
+        reader.readAsDataURL(file);
+    });
+};
 
-// Modèles
-modelBtn.addEventListener('click', () => {
-    console.log('🤖 Ouvre sélecteur modèles');
-    modelModal.classList.remove('hidden');
-});
-confirmModel.addEventListener('click', () => {
-    currentModel = modelSelect.value;
-    modelDisplay.textContent = currentModel.replace(/-/g, ' ').toUpperCase();
-    modelModal.classList.add('hidden');
-    console.log('🔄 Modèle changé:', currentModel);
-});
-cancelModel.addEventListener('click', () => modelModal.classList.add('hidden'));
+// Switch AI
+aiSelect.onchange = (e) => {
+    currentAI = e.target.value;
+    const names = {perplexity: 'PERPLEXITY SONAR', claude: 'CLAUDE 3.5', gpt: 'GPT-4o'};
+    modelInfo.textContent = names[currentAI];
+};
 
-// Chat
-sendBtn.addEventListener('click', sendMessage);
-messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+// Envoi
+input.onkeypress = sendMessage;
+document.querySelector('.file-btn').onclick = () => fileUpload.click();
 
-async function sendMessage() {
-    const message = messageInput.value.trim();
-    if (!message) return;
-
-    console.log('📤 Envoi message:', message);
-    addMessage('user', message);
-    messageInput.value = '';
-    sendBtn.disabled = true;
-
+async function sendMessage(e) {
+    if (e.key !== 'Enter' || !input.value.trim()) return;
+    
+    const text = input.value.trim();
+    addMessage('user', text);
+    input.value = '';
+    status.textContent = 'TRANSMISSION...';
+    
     try {
-        console.log('📡 Appel API Perplexity...');
-        const response = await fetch(API_URL, {
+        const response = await fetch(API_URLS[currentAI], {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + API_KEY,
+                'Authorization': `Bearer ${API_KEYS[currentAI]}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: currentModel,
-                messages: [{ role: 'user', content: message }],
-                max_tokens: 1500,
-                temperature: 0.7
+                model: currentAI === 'perplexity' ? 'sonar-pro' : 'gpt-4o-mini',
+                messages: [{role: 'user', content: text}],
+                max_tokens: 1500
             })
         });
-
-        console.log('📡 Status:', response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Erreur API:', errorText);
-            throw new Error('HTTP ' + response.status);
-        }
-
+        
+        if (!response.ok) throw new Error(response.status);
+        
         const data = await response.json();
-        console.log('✅ Réponse reçue:', data);
-        typeMessage('bot', data.choices[0].message.content);
+        const reply = data.choices[0].message.content;
+        typeMessage('ai', reply);
     } catch (error) {
-        console.error('❌ Erreur complète:', error);
-        addMessage('bot', '❌ Erreur: ' + error.message);
+        addMessage('ai', `❌ ERREUR ${currentAI.toUpperCase()}: ${error.message}`);
     } finally {
-        sendBtn.disabled = false;
-        messageInput.focus();
+        status.textContent = 'READY';
+        input.focus();
     }
 }
 
 function addMessage(sender, text) {
     const div = document.createElement('div');
-    div.className = sender + '-message message';
+    div.className = `${sender}-message message`;
     div.textContent = text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
 }
 
 function typeMessage(sender, text) {
     const div = document.createElement('div');
-    div.className = sender + '-message message typing';
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
+    div.className = `${sender}-message message typing`;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    
     let i = 0;
-    const typeInterval = setInterval(() => {
-        if (i <= text.length) {
-            div.textContent = text.slice(0, i) + '|';
-            i++;
-        } else {
-            clearInterval(typeInterval);
+    const iv = setInterval(() => {
+        div.textContent = text.slice(0, i++) + '█';
+        if (i > text.length) {
+            clearInterval(iv);
             div.classList.remove('typing');
             div.textContent = text;
         }
-    }, 20);
+    }, 25);
 }
-
-console.log('✅ Script entièrement initialisé !');

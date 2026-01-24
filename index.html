@@ -3,48 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perplexity Terminal</title>
+    <title>AI Terminal v2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="login-screen" class="screen">
-        <div class="terminal-container">
-            <div class="prompt">user@perplexity:~$ </div>
-            <form id="login-form">
-                <input type="text" id="username" placeholder="login" autocomplete="username">
-                <input type="password" id="password" placeholder="password" autocomplete="current-password">
-                <button type="submit">connect</button>
-            </form>
+    <div id="app" class="terminal">
+        <div class="header">
+            <span>AI-TERMINAL v2.0 | <span id="status">READY</span></span>
+            <span id="model-info" class="model">PERPLEXITY SONAR</span>
+        </div>
+        
+        <div id="login-section" class="section active">
+            <div class="prompt">$ </div>
+            <input type="text" id="username" placeholder="username" maxlength="20">
+            <input type="password" id="password" placeholder="password" maxlength="50">
             <div id="login-error" class="error"></div>
         </div>
-    </div>
 
-    <div id="chat-screen" class="screen hidden">
-        <div class="terminal-header">
-            <div>user@perplexity:~$ <span id="model-display">SONAR PRO</span></div>
-            <button id="model-btn">🤖 Modèles</button>
-            <button id="logout">exit</button>
-        </div>
-        <div id="chat-messages" class="terminal-messages"></div>
-        <div class="terminal-input">
-            <span class="prompt">user@perplexity:~$ </span>
-            <input type="text" id="message-input" placeholder="Tapez votre commande...">
-            <button id="send-btn">enter</button>
-        </div>
-    </div>
-
-    <div id="model-modal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Choisir un modèle :</h3>
-            <select id="model-select">
-                <option value="sonar-pro">Sonar Pro</option>
-                <option value="llama-3.1-sonar-large-128k-online">Sonar Large + Web</option>
-                <option value="llama-3.1-sonar-small-128k-online">Sonar Small</option>
-            </select>
-            <div class="modal-buttons">
-                <button id="confirm-model">OK</button>
-                <button id="cancel-model">Annuler</button>
+        <div id="chat-section" class="section hidden">
+            <div id="messages" class="messages"></div>
+            <div class="input-row">
+                <input type="file" id="file-upload" accept="image/*,.pdf,.txt,.docx" multiple hidden>
+                <label for="file-upload" class="file-btn">📎</label>
+                <div class="prompt">$ </div>
+                <input type="text" id="input" placeholder="message..." maxlength="2000">
+                <div class="model-switch">
+                    <select id="ai-select">
+                        <option value="perplexity">P</option>
+                        <option value="claude">C</option>
+                        <option value="gpt">G</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
