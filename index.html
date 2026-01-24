@@ -3,38 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Terminal v2.0</title>
+    <title>AI Terminal</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app" class="terminal">
         <div class="header">
-            <span>AI-TERMINAL v2.0 | <span id="status">READY</span></span>
-            <span id="model-info" class="model">PERPLEXITY SONAR</span>
+            <span>AI-TERMINAL | <span id="status">READY</span></span>
+            <span id="model-info" class="model">PERPLEXITY</span>
         </div>
         
+        <!-- LOGIN -->
         <div id="login-section" class="section active">
-            <div class="prompt">$ </div>
+            <div class="prompt">login> </div>
             <input type="text" id="username" placeholder="username" maxlength="20">
             <input type="password" id="password" placeholder="password" maxlength="50">
+            <button id="connect-btn" class="connect-btn">CONNECT</button>
             <div id="login-error" class="error"></div>
         </div>
 
+        <!-- CHAT -->
         <div id="chat-section" class="section hidden">
             <div id="messages" class="messages"></div>
             <div class="input-row">
-                <input type="file" id="file-upload" accept="image/*,.pdf,.txt,.docx" multiple hidden>
+                <input type="file" id="file-upload" accept="image/*,.pdf,.txt" multiple hidden>
                 <label for="file-upload" class="file-btn">📎</label>
                 <div class="prompt">$ </div>
-                <input type="text" id="input" placeholder="message..." maxlength="2000">
-                <div class="model-switch">
-                    <select id="ai-select">
-                        <option value="perplexity">P</option>
-                        <option value="claude">C</option>
-                        <option value="gpt">G</option>
-                    </select>
-                </div>
+                <input type="text" id="input" placeholder="message...">
+                <select id="ai-select">
+                    <option value="perplexity">P</option>
+                    <option value="claude">C</option>
+                    <option value="gpt">G</option>
+                </select>
             </div>
         </div>
     </div>

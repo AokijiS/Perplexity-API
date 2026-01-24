@@ -1,12 +1,11 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { 
     background: #000; 
-    color: #0f0; 
+    color: #fff; 
     font-family: 'IBM Plex Mono', monospace; 
-    font-size: 14px; 
+    font-size: 15px; 
     height: 100vh; 
     overflow: hidden;
-    image-rendering: pixelated;
 }
 
 .terminal { 
@@ -14,23 +13,24 @@ body {
     display: flex; 
     flex-direction: column; 
     background: #000; 
-    border: 2px solid #0f0; 
+    border: 3px solid #fff; 
     margin: 10px; 
-    box-shadow: 0 0 50px rgba(0,255,0,0.3);
-    position: relative;
+    box-shadow: 
+        0 0 20px #fff,
+        inset 0 0 20px rgba(255,255,255,0.1);
 }
 
-/* PIXEL SCANLINES */
+/* SCANLINES BLANC */
 .terminal::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,255,0,0.03) 2px,
-        rgba(0,255,0,0.03) 4px
+        90deg,
+        transparent 0px,
+        transparent 1px,
+        rgba(255,255,255,0.02) 1px,
+        rgba(255,255,255,0.02) 2px
     );
     pointer-events: none;
     z-index: 10;
@@ -38,113 +38,151 @@ body {
 
 .header { 
     background: #111; 
-    padding: 5px 15px; 
-    border-bottom: 1px solid #333; 
-    font-size: 12px; 
+    padding: 8px 15px; 
+    border-bottom: 1px solid #444; 
+    font-size: 13px; 
     display: flex; 
     justify-content: space-between;
-    text-shadow: 0 0 5px #0f0;
+    letter-spacing: 1px;
 }
 
-.model { color: #0ff; font-weight: 500; }
+.model { color: #ccc; font-weight: 500; }
 
-.section { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+.section { padding: 30px 25px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
 .active { display: flex !important; }
 .hidden { display: none !important; }
 
 .prompt { 
-    color: #0f0; 
+    color: #fff; 
     font-weight: 500; 
     margin-right: 10px; 
-    text-shadow: 0 0 3px #0f0;
+    font-size: 16px;
 }
 .prompt::after { content: '█'; animation: blink 1s infinite; }
 
 @keyframes blink { 50% { opacity: 0; } }
 
 input { 
-    background: transparent; 
-    border: none; 
+    background: #111; 
+    border: 1px solid #444; 
     color: #fff; 
+    padding: 12px 15px; 
+    font-family: inherit; 
+    font-size: 15px; 
+    flex: 1;
+    border-radius: 4px;
+}
+input:focus { 
+    outline: none; 
+    border-color: #fff; 
+    box-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+input::placeholder { color: #888; }
+
+.connect-btn { 
+    background: #fff; 
+    color: #000; 
+    border: none; 
+    padding: 12px 25px; 
     font-family: inherit; 
     font-size: 14px; 
-    flex: 1; 
-    outline: none;
-    text-shadow: 0 0 3px #fff;
+    font-weight: 500; 
+    cursor: pointer; 
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
-input::placeholder { color: #666; }
+.connect-btn:hover { 
+    background: #ccc; 
+    box-shadow: 0 0 15px rgba(255,255,255,0.5);
+}
 
 .input-row { 
     display: flex; 
     align-items: center; 
+    gap: 12px; 
     padding-top: 20px; 
     border-top: 1px solid #333;
-    gap: 10px;
 }
 
 .file-btn { 
-    width: 30px; height: 30px; 
+    width: 40px; height: 40px; 
     background: #222; 
-    border: 1px solid #0f0; 
-    border-radius: 3px; 
+    border: 2px solid #666; 
+    border-radius: 6px; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     cursor: pointer; 
-    font-size: 16px;
+    font-size: 18px;
+    transition: all 0.2s;
 }
-.file-btn:hover { background: #0f0; color: #000; box-shadow: 0 0 10px #0f0; }
+.file-btn:hover { 
+    border-color: #fff; 
+    background: #333; 
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
 
-.model-switch select { 
-    background: #111; 
-    color: #0f0; 
-    border: 1px solid #0f0; 
-    padding: 5px 10px; 
-    border-radius: 3px; 
+select { 
+    background: #222; 
+    color: #fff; 
+    border: 2px solid #666; 
+    padding: 10px 15px; 
+    border-radius: 6px; 
     font-family: inherit; 
     font-weight: 500;
-    min-width: 40px;
+    cursor: pointer;
 }
+select:focus { border-color: #fff; }
 
 .messages { 
     flex: 1; 
     overflow-y: auto; 
-    padding-right: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: #0f0 #222;
+    padding: 5px 0;
 }
-.messages::-webkit-scrollbar { width: 8px; }
-.messages::-webkit-scrollbar-track { background: #222; }
-.messages::-webkit-scrollbar-thumb { background: #0f0; border-radius: 4px; }
+.messages::-webkit-scrollbar { width: 6px; }
+.messages::-webkit-scrollbar-track { background: #111; }
+.messages::-webkit-scrollbar-thumb { 
+    background: linear-gradient(#666, #999); 
+    border-radius: 3px; 
+}
 
 .message { 
-    margin-bottom: 15px; 
-    padding: 10px 15px; 
-    background: rgba(0,255,0,0.05); 
-    border-left: 3px solid #0f0; 
-    border-radius: 3px;
-    max-width: 90%;
+    margin-bottom: 12px; 
+    padding: 12px 18px; 
+    background: rgba(255,255,255,0.05); 
+    border-left: 4px solid #fff; 
+    border-radius: 4px 0 0 4px;
+    max-width: 85%;
     white-space: pre-wrap;
-    line-height: 1.4;
-    text-shadow: 0 0 2px rgba(0,255,0,0.5);
-    animation: fadeIn 0.3s;
+    line-height: 1.5;
+    animation: slideIn 0.3s ease-out;
 }
 .user-message { 
     margin-left: auto; 
-    background: rgba(0,255,255,0.1); 
-    border-left-color: #0ff; 
+    background: rgba(255,255,255,0.08); 
+    border-left-color: #ccc; 
+    border-radius: 0 4px 4px 0;
     text-align: right;
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } }
 
-.typing::after { content: '█'; animation: blink 0.5s infinite; }
+.typing { position: relative; }
+.typing::after { 
+    content: '█'; 
+    animation: blink 0.6s infinite; 
+    display: inline-block;
+    margin-left: 2px;
+}
 
 .error { 
-    color: #f44; 
-    margin-top: 10px; 
-    font-size: 12px; 
-    animation: shake 0.5s;
+    color: #f55; 
+    font-size: 13px; 
+    animation: shake 0.4s;
 }
-@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+@keyframes shake { 25%, 75% { transform: translateX(4px); } }
 
-@media (max-width: 768px) { .terminal { margin: 5px; font-size: 12px; } }
+@media (max-width: 600px) { 
+    .terminal { margin: 5px; font-size: 14px; } 
+    .input-row { flex-wrap: wrap; }
+}
