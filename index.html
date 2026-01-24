@@ -4,39 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Terminal</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app" class="terminal">
+    <div id="terminal" class="terminal">
         <div class="header">
-            <span>AI-TERMINAL | <span id="status">READY</span></span>
-            <span id="model-info" class="model">PERPLEXITY</span>
+            <span>user@ai-terminal:~ $ <span id="status">READY</span></span>
+            <span id="model-display">sonar-pro</span>
         </div>
         
-        <div id="login-section" class="section">
-            <div class="prompt">login> </div>
-            <input type="text" id="username" placeholder="username">
-            <input type="password" id="password" placeholder="password">
-            <button id="connect-btn" class="connect-btn">CONNECT</button>
-            <div id="login-error" class="error"></div>
+        <!-- LOGIN -->
+        <div id="login-screen">
+            <div class="login-prompt">auth> </div>
+            <input type="text" id="username" placeholder="username" maxlength="20">
+            <input type="password" id="password" placeholder="password" maxlength="50">
+            <button id="login-btn">connect</button>
+            <div id="login-msg"></div>
         </div>
 
-        <div id="chat-section" class="section hidden">
-            <div id="messages" class="messages"></div>
-            <div class="input-row">
-                <input type="file" id="file-upload" accept="image/*,.pdf,.txt" multiple hidden>
-                <label for="file-upload" class="file-btn">📎</label>
-                <div class="prompt">$ </div>
-                <input type="text" id="input" placeholder="Tapez...">
-                <select id="ai-select">
-                    <option value="sonar-pro">P</option>
-                    <option value="llama-3.1-sonar-large-128k-online">L</option>
-                </select>
+        <!-- CHAT TERMINAL -->
+        <div id="chat-screen" class="hidden">
+            <div id="messages"></div>
+            <div class="input-line">
+                <span class="prompt" id="prompt">user@ai:~$ </span>
+                <input type="text" id="input" placeholder="entrez commande...">
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

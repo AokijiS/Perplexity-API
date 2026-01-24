@@ -1,48 +1,173 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #000; color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 15px; height: 100vh; overflow: hidden; }
 
-.terminal { height: 100vh; display: flex; flex-direction: column; background: #000; border: 3px solid #fff; margin: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.3); position: relative; }
+body { 
+    background: #000; 
+    color: #0f0; 
+    font-family: 'IBM Plex Mono', monospace; 
+    font-size: 16px; 
+    height: 100vh; 
+    overflow: hidden;
+}
 
-.terminal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(90deg, transparent 0px, transparent 1px, rgba(255,255,255,0.02) 1px, rgba(255,255,255,0.02) 2px); pointer-events: none; z-index: 10; }
+.terminal { 
+    height: 100vh; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    background: #000; 
+    border: 2px solid #0f0; 
+    box-shadow: 
+        0 0 50px rgba(0,255,0,0.5),
+        inset 0 0 50px rgba(0,0,0,0.8);
+    display: flex; 
+    flex-direction: column;
+    position: relative;
+}
 
-.header { background: #111; padding: 8px 20px; border-bottom: 1px solid #444; font-size: 13px; display: flex; justify-content: space-between; letter-spacing: 1px; }
+/* SCANLINES */
+.terminal::before {
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    height: 2px; 
+    background: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,255,0,0.1) 1px, rgba(0,255,0,0.1) 2px); 
+    box-shadow: 0 0 10px rgba(0,255,0,0.3);
+    animation: scanline 3s linear infinite;
+}
+@keyframes scanline { 0% { top: 0; } 100% { top: 100%; } }
 
-.model { color: #ccc; font-weight: 500; }
+.header { 
+    background: rgba(0,20,0,0.9); 
+    padding: 10px 20px; 
+    border-bottom: 1px solid #0f0; 
+    font-size: 14px; 
+    display: flex; 
+    justify-content: space-between; 
+    text-shadow: 0 0 10px #0f0;
+}
 
-.section { padding: 40px 30px; flex: 1; display: flex; flex-direction: column; gap: 15px; }
+#model-display { color: #0ff; font-weight: 500; }
+
+#login-screen, #chat-screen { 
+    flex: 1; 
+    padding: 30px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px;
+}
+
 .hidden { display: none !important; }
 
-.prompt { color: #fff; font-weight: 500; margin-right: 15px; font-size: 16px; }
-.prompt::after { content: '█'; animation: blink 1s infinite; }
-@keyframes blink { 50% { opacity: 0; } }
+.login-prompt { 
+    color: #ff0; 
+    font-weight: 700; 
+    font-size: 18px; 
+    text-shadow: 0 0 10px #ff0;
+}
 
-input { background: #111; border: 1px solid #555; color: #fff; padding: 15px 20px; font-family: inherit; font-size: 15px; flex: 1; border-radius: 4px; }
-input:focus { outline: none; border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
-input::placeholder { color: #888; }
+#username, #password, #input { 
+    background: rgba(0,0,0,0.8); 
+    border: 2px solid #333; 
+    color: #fff; 
+    padding: 15px 20px; 
+    font-family: inherit; 
+    font-size: 16px; 
+    border-radius: 4px;
+    flex: 1;
+}
+#username:focus, #password:focus, #input:focus { 
+    outline: none; 
+    border-color: #0f0; 
+    box-shadow: 0 0 20px rgba(0,255,0,0.5);
+}
+#username::placeholder, #password::placeholder, #input::placeholder { color: #666; }
 
-.connect-btn { background: #fff; color: #000; border: none; padding: 15px 30px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; }
-.connect-btn:hover { background: #eee; box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+#login-btn { 
+    background: linear-gradient(45deg, #0f0, #0a0); 
+    color: #000; 
+    border: none; 
+    padding: 15px 40px; 
+    font-family: inherit; 
+    font-size: 16px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    border-radius: 4px; 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(0,255,0,0.5);
+    transition: all 0.3s;
+}
+#login-btn:hover { 
+    background: linear-gradient(45deg, #0a0, #0f0); 
+    box-shadow: 0 0 30px rgba(0,255,0,0.8);
+    transform: scale(1.05);
+}
 
-.input-row { display: flex; align-items: center; gap: 15px; padding-top: 25px; border-top: 1px solid #333; }
+#login-msg, .system-msg { 
+    color: #ff0; 
+    font-weight: 500; 
+    font-size: 14px; 
+    text-align: center;
+    padding: 10px;
+}
 
-.file-btn { width: 45px; height: 45px; background: #222; border: 2px solid #666; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: all 0.2s; }
-.file-btn:hover { border-color: #fff; background: #444; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+#messages { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding-right: 20px;
+    scrollbar-width: thin; 
+    scrollbar-color: #0f0 transparent;
+}
+#messages::-webkit-scrollbar { width: 6px; }
+#messages::-webkit-scrollbar-track { background: transparent; }
+#messages::-webkit-scrollbar-thumb { background: #0f0; border-radius: 3px; opacity: 0.5; }
 
-select { background: #222; color: #fff; border: 2px solid #666; padding: 12px 20px; border-radius: 6px; font-family: inherit; font-weight: 500; cursor: pointer; }
-select:focus { border-color: #fff; outline: none; }
+.message { 
+    margin-bottom: 15px; 
+    padding: 15px 20px; 
+    background: rgba(0,255,0,0.05); 
+    border-left: 4px solid #0f0; 
+    border-radius: 0 6px 6px 0; 
+    max-width: 90%; 
+    white-space: pre-wrap; 
+    line-height: 1.5;
+    animation: messageIn 0.4s ease-out;
+    box-shadow: 0 0 10px rgba(0,255,0,0.2);
+}
+.user-message { 
+    margin-left: auto; 
+    background: rgba(0,255,255,0.1); 
+    border-left-color: #0ff; 
+    border-radius: 6px 0 6px 6px;
+    text-align: right;
+}
+@keyframes messageIn { from { opacity: 0; transform: translateY(20px); } }
 
-.messages { flex: 1; overflow-y: auto; padding: 10px 0; }
-.messages::-webkit-scrollbar { width: 8px; }
-.messages::-webkit-scrollbar-track { background: #111; }
-.messages::-webkit-scrollbar-thumb { background: linear-gradient(#666,#aaa); border-radius: 4px; }
+.typing { position: relative; }
+.typing::after { content: '█'; animation: blink 0.5s infinite; color: #0f0; }
 
-.message { margin-bottom: 15px; padding: 15px 20px; background: rgba(255,255,255,0.06); border-left: 4px solid #fff; border-radius: 4px 0 0 4px; max-width: 85%; white-space: pre-wrap; line-height: 1.5; animation: slideIn 0.3s; }
-.user-message { margin-left: auto; background: rgba(255,255,255,0.1); border-left-color: #ccc; border-radius: 0 4px 4px 0; text-align: right; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } }
+.input-line { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 20px 0 20px 0; 
+    border-top: 1px solid #0f0;
+}
 
-.typing::after { content: '_'; animation: blink 0.5s infinite; margin-left: 2px; display: inline-block; }
+#prompt { 
+    color: #0ff; 
+    font-weight: 700; 
+    font-size: 17px; 
+    text-shadow: 0 0 10px #0ff;
+    animation: promptGlow 2s ease-in-out infinite alternate;
+}
+@keyframes promptGlow { 
+    0% { text-shadow: 0 0 10px #0ff; } 
+    100% { text-shadow: 0 0 25px #0ff, 0 0 35px #0ff; } 
+}
 
-.error { color: #f66; font-size: 14px; animation: shake 0.4s; }
-@keyframes shake { 25%, 75% { transform: translateX(5px); } }
-
-@media (max-width: 600px) { .terminal { margin: 5px; font-size: 14px; } .input-row { flex-wrap: wrap; gap: 10px; } }
+@media (max-width: 768px) { 
+    .terminal { margin: 5px; font-size: 14px; } 
+    #messages { padding-right: 10px; }
+}
