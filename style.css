@@ -1,0 +1,107 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: 'JetBrains Mono', monospace; 
+    background: #000; 
+    color: #00ff00; 
+    height: 100vh; 
+    overflow: hidden;
+}
+
+.screen { width: 100%; height: 100vh; display: flex; flex-direction: column; }
+.hidden { display: none !important; }
+
+.terminal-container { 
+    margin: auto; padding: 2rem; 
+    background: #000; 
+    border: 2px solid #00ff00; 
+    border-radius: 10px; 
+    max-width: 500px; width: 90%; 
+    box-shadow: 0 0 50px rgba(0,255,0,0.3);
+}
+
+.prompt { color: #00ff41; font-weight: 500; margin-bottom: 1rem; display: block; }
+.prompt::after { content: '█'; animation: blink 1s infinite; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+.terminal-container input { 
+    background: #000; color: #fff; 
+    border: 1px solid #333; border-radius: 5px; 
+    padding: 0.8rem; width: 100%; margin-bottom: 1rem; 
+    font-family: inherit; font-size: 1rem;
+}
+.terminal-container input::placeholder { color: #666; }
+.terminal-container button { 
+    background: #00ff00; color: #000; 
+    border: none; padding: 0.8rem 1.5rem; 
+    border-radius: 5px; cursor: pointer; 
+    font-family: inherit; font-weight: 500;
+}
+.terminal-container button:hover { background: #00cc00; box-shadow: 0 0 10px #00ff00; }
+.error { color: #ff4444; margin-top: 1rem; animation: shake 0.5s; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+.terminal-header { 
+    background: #111; padding: 1rem 2rem; 
+    border-bottom: 1px solid #333; display: flex; 
+    justify-content: space-between; align-items: center; 
+    font-size: 0.9rem;
+}
+#model-display { color: #00ff41; font-weight: 500; }
+#model-btn, #logout { 
+    background: #333; color: #00ff00; 
+    border: 1px solid #00ff00; padding: 0.5rem 1rem; 
+    border-radius: 5px; cursor: pointer; font-size: 0.8rem;
+    transition: all 0.3s;
+}
+#model-btn:hover, #logout:hover { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
+
+.terminal-messages { 
+    flex: 1; padding: 2rem; 
+    overflow-y: auto; background: #000;
+    line-height: 1.5;
+}
+.message { margin-bottom: 1.5rem; padding: 1rem; border-left: 3px solid #00ff41; background: #111; border-radius: 5px; max-width: 90%; word-wrap: break-word; }
+.user-message { border-left-color: #4169E1; background: #001122; margin-left: auto; text-align: right; border-left-width: 3px; }
+.typing::after { content: '|'; animation: blink 1s infinite; }
+
+.terminal-input { 
+    padding: 1.5rem 2rem; background: #111; 
+    border-top: 1px solid #333; display: flex; align-items: center;
+}
+.prompt { margin-right: 1rem; font-weight: 500; color: #00ff41; white-space: nowrap; }
+#message-input { 
+    flex: 1; background: transparent; 
+    border: none; color: #fff; font-family: inherit; 
+    font-size: 1rem; outline: none;
+}
+#message-input::placeholder { color: #666; }
+#send-btn { 
+    background: transparent; color: #00ff00; 
+    border: 1px solid #00ff00; padding: 0.8rem 1.5rem; 
+    border-radius: 5px; cursor: pointer; margin-left: 1rem;
+    font-family: inherit;
+}
+#send-btn:hover:not(:disabled) { background: #00ff00; color: #000; }
+
+.modal { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; 
+    z-index: 1000;
+}
+.modal-content { 
+    background: #111; padding: 2rem; border: 2px solid #00ff00; 
+    border-radius: 10px; max-width: 400px; width: 90%; text-align: center;
+}
+.modal-content h3 { color: #00ff41; margin-bottom: 1rem; }
+#model-select { 
+    width: 100%; padding: 1rem; background: #000; color: #fff; 
+    border: 1px solid #333; border-radius: 5px; font-family: inherit;
+    margin-bottom: 1rem;
+}
+.modal-buttons button { 
+    margin: 0 0.5rem; padding: 0.8rem 1.5rem; 
+    border: 1px solid #00ff00; background: #000; color: #00ff00;
+}
+.modal-buttons button:hover { background: #00ff00; color: #000; }
+
+@media (max-width: 768px) { .terminal-header, .terminal-input { padding-left: 1rem; padding-right: 1rem; } }

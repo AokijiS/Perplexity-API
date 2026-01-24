@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perplexity Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Écran de connexion -->
+    <div id="login-screen" class="screen">
+        <div class="terminal-container">
+            <div class="prompt">user@perplexity:~$ </div>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="login" autocomplete="username">
+                <input type="password" id="password" placeholder="password" autocomplete="current-password">
+                <button type="submit">connect</button>
+            </form>
+            <div id="login-error" class="error"></div>
+        </div>
+    </div>
+
+    <!-- Interface Terminal Chat -->
+    <div id="chat-screen" class="screen hidden">
+        <div class="terminal-header">
+            <div>user@perplexity:~$ <span id="model-display">sonar-pro</span></div>
+            <button id="model-btn">🤖 Modèles</button>
+            <button id="logout">exit</button>
+        </div>
+        <div id="chat-messages" class="terminal-messages"></div>
+        <div class="terminal-input">
+            <span class="prompt">user@perplexity:~$ </span>
+            <input type="text" id="message-input" placeholder="Tapez votre commande...">
+            <button id="send-btn">enter</button>
+        </div>
+    </div>
+
+    <!-- Modal Modèles -->
+    <div id="model-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Choisir un modèle :</h3>
+            <select id="model-select">
+                <option value="sonar-pro">Sonar Pro (rapide)</option>
+                <option value="llama-3.1-sonar-large-128k-online">Sonar Large + Web (recherche)</option>
+                <option value="llama-3.1-sonar-small-128k-online">Sonar Small (léger)</option>
+                <option value="llama-3.1-sonar-huge-128k-online">Sonar Huge (puissant)</option>
+            </select>
+            <div class="modal-buttons">
+                <button id="confirm-model">OK</button>
+                <button id="cancel-model">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
