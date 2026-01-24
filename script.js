@@ -9,7 +9,6 @@ async function sha256(message) {
 const API_URL = 'https://api.perplexity.ai/chat/completions';
 let currentModel = 'sonar-pro';
 
-// Hash du mot de passe attendu (SHA-256 de "#Amine232008")
 const EXPECTED_PASSWORD_HASH = '8f4e5b3a2d1c9e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3'; 
 
 const loginScreen = document.getElementById('login-screen');
