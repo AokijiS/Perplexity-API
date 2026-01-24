@@ -14,27 +14,24 @@
             <span id="model-info" class="model">PERPLEXITY</span>
         </div>
         
-        <!-- LOGIN -->
-        <div id="login-section" class="section active">
+        <div id="login-section" class="section">
             <div class="prompt">login> </div>
-            <input type="text" id="username" placeholder="username" maxlength="20">
-            <input type="password" id="password" placeholder="password" maxlength="50">
+            <input type="text" id="username" placeholder="username">
+            <input type="password" id="password" placeholder="password">
             <button id="connect-btn" class="connect-btn">CONNECT</button>
             <div id="login-error" class="error"></div>
         </div>
 
-        <!-- CHAT -->
         <div id="chat-section" class="section hidden">
             <div id="messages" class="messages"></div>
             <div class="input-row">
                 <input type="file" id="file-upload" accept="image/*,.pdf,.txt" multiple hidden>
                 <label for="file-upload" class="file-btn">📎</label>
                 <div class="prompt">$ </div>
-                <input type="text" id="input" placeholder="message...">
+                <input type="text" id="input" placeholder="Tapez...">
                 <select id="ai-select">
-                    <option value="perplexity">P</option>
-                    <option value="claude">C</option>
-                    <option value="gpt">G</option>
+                    <option value="sonar-pro">P</option>
+                    <option value="llama-3.1-sonar-large-128k-online">L</option>
                 </select>
             </div>
         </div>
