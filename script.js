@@ -318,78 +318,75 @@ function getFileTextContent(base64Data) {
 
 // === ASK AI (FIX FICHIERS TEXTE COMPLET) ===
 async function askAI(question) {
-  writeLine(`🤖 AI thinking...`, 'typing');
+  writeLine("🤖 AI thinking...", "typing");
   isTyping = true;
   abortController = new AbortController();
 
   let fullPrompt = question;
-  let usedFiles = [];
+  let usedFiles = [];  // Liste CONTENU TEXTE des fichiers
 
-  // Lis CONTENU TEXTE des fichiers
   if (uploadedFiles.length > 0) {
-    writeLine(`📎 Using ${uploadedFiles.length} file(s): ${uploadedFiles.map(f => f.name).join(', ')}`, 'file');
-    for (const fileData of uploadedFiles) {
-      try {
-        const textContent = await getFileTextContent(fileData.base64);
-        fullPrompt += `\n\n--- FICHIER: ${fileData.name} (${fileData.type}) ---\n${textContent}\n--- FIN FICHIER ---`;
-        usedFiles.push(fileData.name);
-      } catch (e) {
-        writeLine(`⚠️ Skip ${fileData.name}: ${e.message}`, 'warning');
-      }
+    writeLine(`📎 Using ${uploadedFiles.length} file(s): ${uploadedFiles.map(f => f.name).join(', ')}`, "file");
+  }
+
+  // Ajoute SEULEMENT le texte des fichiers texte
+  for (const fileData of uploadedFiles) {
+    try {
+      const textContent = await getFileTextContent(fileData.base64);
+      fullPrompt += `\n\n--- FICHIER ${fileData.name} (${fileData.type}) ---\n${textContent}\n--- FIN FICHIER ---`;
+      usedFiles.push(fileData.name);
+    } catch (e) {
+      writeLine(`Skip ${fileData.name}: ${e.message}`, "warning");
     }
   }
 
   const messages = [
-    { role: 'system', content: currentPersona },
-    { role: 'user', content: fullPrompt }
+    { role: "system", content: currentPersona },
+    { role: "user", content: fullPrompt }
   ];
 
-  // Images séparées
-  uploadedFiles.forEach(fileData => {
-    if (fileData.type.startsWith('image/')) {
-      messages.push({ type: 'image_url', image_url: { url: fileData.base64 } });
-    }
-  });
+  // PAS D'IMAGES dans messages - Perplexity ne gère pas data: URLs !
 
   try {
     const response = await fetch(APIURL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${APIKEY}`,
-        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${APIKEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: currentModel,
         messages,
         max_tokens: 4000,
         temperature: 0.7,
-      }),
+      }, null, 2),  // Pretty print pour debug
       signal: abortController.signal,
     });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
 
     const data = await response.json();
     await typeText(data.choices[0].message.content);
-    
+
     // Nettoie fichiers utilisés
     if (usedFiles.length > 0) {
       uploadedFiles = uploadedFiles.filter(f => !usedFiles.includes(f.name));
-      writeLine(`🗑️ Cleared ${usedFiles.length} used file(s)`, 'system');
+      writeLine(`Cleared ${usedFiles.length} used files.`, "system");
     }
   } catch (err) {
     if (err.name === 'AbortError') {
-      writeLine('Request aborted.', 'warning');
+      writeLine("Request aborted.", "warning");
     } else {
-      writeLine(`❌ Error: ${err.message}`, 'error');
+      writeLine(`❌ Error: ${err.message}`, "error");
     }
   } finally {
     isTyping = false;
-    writeLine('');
     focusInput();
   }
 }
-
 // === TYPE TEXT ===
 async function typeText(text) {
   const lines = text.split('\n');
