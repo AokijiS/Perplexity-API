@@ -1,5 +1,10 @@
 console.log("🖥️ AI TERMINAL v8 - ULTRA REALISTIC CONFIG");
 
+// Configuration PDF.js
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
 // === CONFIG ===
 const APIKEY = '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';
 const APIURL = 'https://api.perplexity.ai/chat/completions';
@@ -241,11 +246,25 @@ async function handleCommand(command) {
       const files = Array.from(e.target.files);
       for (const file of files) {
         const base64 = await fileToBase64(file);
+        
+        // Pour les PDFs, extraire le texte
+        let extractedText = null;
+        if (file.type === 'application/pdf') {
+          writeLine(`📄 Extracting text from ${file.name}...`, 'system');
+          extractedText = await extractPDFText(file);
+          if (extractedText) {
+            writeLine(`✅ Extracted ${extractedText.length} characters`, 'success');
+          } else {
+            writeLine(`⚠️ Could not extract text, will send as file`, 'warning');
+          }
+        }
+        
         uploadedFiles.push({
           name: file.name,
           type: file.type || 'application/octet-stream',
           size: file.size,
-          base64
+          base64,
+          extractedText // Texte extrait pour les PDFs
         });
         writeLine(`${file.name} (${(file.size / 1024).toFixed(1)}KB) loaded`, 'file');
       }
@@ -349,6 +368,27 @@ function fileToBase64(file) {
   });
 }
 
+// === EXTRACT TEXT FROM PDF ===
+async function extractPDFText(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+    
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += `\n--- Page ${i} ---\n${pageText}\n`;
+    }
+    
+    return fullText;
+  } catch (error) {
+    console.error('PDF extraction error:', error);
+    return null;
+  }
+}
+
 // === EXTRAIT TEXTE DE BASE64 (pour preview seulement) ===
 function getFileTextContent(base64Data) {
   return new Promise((resolve, reject) => {
@@ -395,32 +435,27 @@ async function askAI(question) {
         continue;
       }
 
+      // Pour les PDFs avec texte extrait, envoyer le texte
+      if (fileData.type === "application/pdf" && fileData.extractedText) {
+        userContent[0].text += `\n\n📄 **Contenu du fichier ${fileData.name}:**\n${fileData.extractedText}`;
+      }
       // Pour images: type image_url
-      if (fileData.type.startsWith("image/")) {
+      else if (fileData.type.startsWith("image/")) {
         userContent.push({
           type: "image_url",
           image_url: {
-            url: fileData.base64 // data:image/...;base64,...
-          }
-        });
-      } 
-      // Pour PDFs: type pdf_url
-      else if (fileData.type === "application/pdf") {
-        userContent.push({
-          type: "pdf_url",
-          pdf_url: {
-            url: fileData.base64 // data:application/pdf;base64,...
+            url: fileData.base64
           }
         });
       }
-      // Pour autres fichiers: type file_url
-      else {
-        userContent.push({
-          type: "file_url",
-          file_url: {
-            url: fileData.base64 // data:...;base64,...
-          }
-        });
+      // Pour autres fichiers texte
+      else if (fileData.type.startsWith("text/")) {
+        try {
+          const text = await getFileTextContent(fileData.base64);
+          userContent[0].text += `\n\n📄 **Contenu du fichier ${fileData.name}:**\n${text}`;
+        } catch (e) {
+          writeLine(`⚠️ Could not read ${fileData.name}`, 'warning');
+        }
       }
     }
   }
