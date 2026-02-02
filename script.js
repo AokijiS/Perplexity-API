@@ -1,7 +1,7 @@
 console.log("🖥️ AI TERMINAL v8 - ULTRA REALISTIC CONFIG");
 
 // === CONFIG ===
-const APIKEY = 'pplx-TON_API_KEY_ICI';
+const APIKEY = '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';
 const APIURL = 'https://api.perplexity.ai/chat/completions';
 const PASSWORDHASH = 'd8894d6842a31c162c2d0f14ece07bb286d32b5a2f4825c6c8d4f2c1a0ad3166';
 const USERNAME = 'aokiji';
