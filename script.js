@@ -363,9 +363,8 @@ async function askAI(question) {
         writeLine(`❌ ${fileData.name} > 50MB, skipped`, "error");
         continue;
       }
-      const base64Only = fileData.base64.split(',')[1];
 
-      // Pour images: type image_url, pour docs: file_base64 (conforme docs Perplexity)
+      // Pour images: type image_url
       if (fileData.type.startsWith("image/")) {
         userContent.push({
           type: "image_url",
@@ -373,13 +372,22 @@ async function askAI(question) {
             url: fileData.base64 // data:image/...;base64,...
           }
         });
-      } else {
+      } 
+      // Pour PDFs: type pdf_url
+      else if (fileData.type === "application/pdf") {
         userContent.push({
-          type: "file_base64",
-          file_base64: {
-            media_type: fileData.type || "application/octet-stream",
-            data: base64Only,
-            file_name: fileData.name
+          type: "pdf_url",
+          pdf_url: {
+            url: fileData.base64 // data:application/pdf;base64,...
+          }
+        });
+      }
+      // Pour autres fichiers: type file_url
+      else {
+        userContent.push({
+          type: "file_url",
+          file_url: {
+            url: fileData.base64 // data:...;base64,...
           }
         });
       }
