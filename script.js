@@ -15,6 +15,7 @@ let historyIndex = -1;
 let uploadedFiles = []; // Persist files
 let isTyping = false;
 let abortController = null;
+let conversationHistory = []; // Historique de conversation
 
 // === PERSONAS ===
 const PERSONAS = {
@@ -177,6 +178,8 @@ async function handleCommand(command) {
     writeLine('  upload            Upload files (.java, .txt, images, pdf...)');
     writeLine('  readfile [name]   Preview file content');
     writeLine('  clear   or Ctrl+K Clear terminal');
+    writeLine('  clearhistory      Clear conversation history');
+    writeLine('  history           Show conversation history');
     writeLine('  exit              Logout');
     writeLine('  personas          List personalities');
     writeLine('  setpersona [name] Set IA (dev, linux, code, game, general)');
@@ -194,6 +197,30 @@ async function handleCommand(command) {
     return focusInput();
   }
 
+  // Clear history
+  if (command === 'clearhistory') {
+    conversationHistory = [];
+    writeLine('✅ Conversation history cleared', 'success');
+    return focusInput();
+  }
+
+  // Show history
+  if (command === 'history') {
+    if (conversationHistory.length === 0) {
+      writeLine('📭 No conversation history', 'system');
+    } else {
+      writeLine(`📜 Conversation history (${conversationHistory.length / 2} exchanges):`, 'system');
+      conversationHistory.forEach((msg, idx) => {
+        const role = msg.role === 'user' ? '👤 User' : '🤖 AI';
+        const preview = typeof msg.content === 'string' 
+          ? msg.content.substring(0, 80) 
+          : msg.content[0]?.text?.substring(0, 80) || '[file attached]';
+        writeLine(`  ${idx + 1}. ${role}: ${preview}${preview.length >= 80 ? '...' : ''}`, 'system');
+      });
+    }
+    return focusInput();
+  }
+
   // Exit
   if (command === 'exit') {
     writeLine('Logging out...', 'warning');
@@ -202,6 +229,7 @@ async function handleCommand(command) {
     loginStep = 0;
     tempUsername = '';
     uploadedFiles = [];
+    conversationHistory = []; // Reset l'historique
     prompt.textContent = 'login:';
     return focusInput();
   }
@@ -349,10 +377,13 @@ async function askAI(question) {
   isTyping = true;
   abortController = new AbortController();
 
-  // Construire content user: texte + fichiers
+  // Construire content user: texte + fichiers (seulement pour le premier message avec fichiers)
   const userContent = [{ type: "text", text: question }];
 
-  if (uploadedFiles.length > 0) {
+  // N'ajoute les fichiers QUE si c'est le premier message ou si l'historique est vide
+  const shouldAttachFiles = uploadedFiles.length > 0 && conversationHistory.length === 0;
+  
+  if (shouldAttachFiles) {
     writeLine(
       `📎 Using ${uploadedFiles.length} file(s): ${uploadedFiles.map(f => f.name).join(', ')}`,
       "file"
@@ -394,8 +425,10 @@ async function askAI(question) {
     }
   }
 
+  // Construire les messages avec l'historique
   const messages = [
     { role: "system", content: currentPersona },
+    ...conversationHistory,
     { role: "user", content: userContent }
   ];
 
@@ -424,21 +457,34 @@ async function askAI(question) {
 
     // FIX: L'API retourne data.choices[0].message.content
     const content = data.choices[0].message.content;
+    let aiResponseText = "";
+    
     if (typeof content === "string") {
+      aiResponseText = content;
       await renderAIResponse(content);
     } else if (Array.isArray(content)) {
       const fullText = content
         .filter(part => part.type === "output_text" || part.type === "text")
         .map(part => part.text)
         .join("\n");
+      aiResponseText = fullText;
       await renderAIResponse(fullText);
     } else {
+      aiResponseText = String(content);
       await renderAIResponse(String(content));
     }
 
-    // Option: on garde les fichiers pour d'autres questions ou on les clear
-    // uploadedFiles = [];
-    // writeLine("Cleared files.", "system");
+    // Ajouter à l'historique (seulement le texte, pas les fichiers pour les messages suivants)
+    conversationHistory.push(
+      { role: "user", content: question },
+      { role: "assistant", content: aiResponseText }
+    );
+
+    // Limiter l'historique aux 20 derniers messages (10 échanges)
+    if (conversationHistory.length > 20) {
+      conversationHistory = conversationHistory.slice(-20);
+    }
+
   } catch (err) {
     if (err.name === 'AbortError') {
       writeLine("Request aborted.", "warning");
