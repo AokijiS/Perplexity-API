@@ -488,7 +488,7 @@ function splitTextAndCode(text) {
   return parts.filter(p => p.content);
 }
 
-// Affiche un bloc code avec bouton "Copier"
+// Affiche un bloc code avec bouton "Copier" et coloration syntaxique
 function writeCodeBlock(code, label = 'code') {
   const wrapper = document.createElement('div');
   wrapper.className = 'code-block';
@@ -519,7 +519,10 @@ function writeCodeBlock(code, label = 'code') {
 
   const pre = document.createElement('pre');
   const codeEl = document.createElement('code');
-  codeEl.textContent = code;
+  
+  // Applique la coloration syntaxique
+  codeEl.innerHTML = highlightCode(code, label);
+  
   pre.appendChild(codeEl);
 
   wrapper.appendChild(header);
@@ -528,6 +531,159 @@ function writeCodeBlock(code, label = 'code') {
   output.appendChild(wrapper);
   scrollToBottom();
 }
+
+// === COLORATION SYNTAXIQUE ===
+function highlightCode(code, language) {
+  language = language.toLowerCase();
+  
+  // Échappe le HTML pour éviter les injections
+  code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  
+  // JavaScript / TypeScript
+  if (language === 'javascript' || language === 'js' || language === 'typescript' || language === 'ts') {
+    return highlightJavaScript(code);
+  }
+  // Java
+  else if (language === 'java') {
+    return highlightJava(code);
+  }
+  // Python
+  else if (language === 'python' || language === 'py') {
+    return highlightPython(code);
+  }
+  // HTML
+  else if (language === 'html' || language === 'xml') {
+    return highlightHTML(code);
+  }
+  // CSS
+  else if (language === 'css') {
+    return highlightCSS(code);
+  }
+  // JSON
+  else if (language === 'json') {
+    return highlightJSON(code);
+  }
+  // Bash / Shell
+  else if (language === 'bash' || language === 'sh' || language === 'shell') {
+    return highlightBash(code);
+  }
+  
+  // Par défaut, retourne le code sans coloration
+  return code;
+}
+
+function highlightJavaScript(code) {
+  const keywords = /\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|async|await|class|extends|import|export|from|default|new|this|super|static|get|set|typeof|instanceof|delete|void|yield|in|of|null|undefined|true|false)\b/g;
+  const strings = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)/g;
+  const comments = /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm;
+  const numbers = /\b(\d+\.?\d*)\b/g;
+  const functions = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g;
+  
+  code = code.replace(comments, '<span class="comment">$1</span>');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(keywords, '<span class="keyword">$1</span>');
+  code = code.replace(functions, '<span class="function">$1</span>');
+  code = code.replace(numbers, '<span class="number">$1</span>');
+  
+  return code;
+}
+
+function highlightJava(code) {
+  const keywords = /\b(public|private|protected|static|final|abstract|class|interface|extends|implements|new|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|throws|void|int|long|double|float|boolean|char|byte|short|String|this|super|null|true|false|import|package|enum|synchronized|volatile|transient|native|strictfp|assert)\b/g;
+  const strings = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+  const comments = /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm;
+  const numbers = /\b(\d+\.?\d*[LlFfDd]?)\b/g;
+  const annotations = /(@[A-Z][a-zA-Z0-9_]*)/g;
+  const functions = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g;
+  
+  code = code.replace(comments, '<span class="comment">$1</span>');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(annotations, '<span class="annotation">$1</span>');
+  code = code.replace(keywords, '<span class="keyword">$1</span>');
+  code = code.replace(functions, '<span class="function">$1</span>');
+  code = code.replace(numbers, '<span class="number">$1</span>');
+  
+  return code;
+}
+
+function highlightPython(code) {
+  const keywords = /\b(def|class|if|elif|else|for|while|return|import|from|as|try|except|finally|raise|with|lambda|yield|pass|break|continue|global|nonlocal|assert|del|and|or|not|is|in|None|True|False|self)\b/g;
+  const strings = /("""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|f"(?:[^"\\]|\\.)*"|f'(?:[^'\\]|\\.)*')/g;
+  const comments = /(#.*$)/gm;
+  const numbers = /\b(\d+\.?\d*)\b/g;
+  const decorators = /(@[a-zA-Z_][a-zA-Z0-9_]*)/g;
+  const functions = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g;
+  
+  code = code.replace(comments, '<span class="comment">$1</span>');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(decorators, '<span class="annotation">$1</span>');
+  code = code.replace(keywords, '<span class="keyword">$1</span>');
+  code = code.replace(functions, '<span class="function">$1</span>');
+  code = code.replace(numbers, '<span class="number">$1</span>');
+  
+  return code;
+}
+
+function highlightHTML(code) {
+  const tags = /(&lt;\/?[a-zA-Z][a-zA-Z0-9-]*)/g;
+  const attributes = /\b([a-zA-Z-]+)(?==)/g;
+  const strings = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+  const comments = /(&lt;!--[\s\S]*?--&gt;)/g;
+  
+  code = code.replace(comments, '<span class="comment">$1</span>');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(tags, '<span class="tag">$1</span>');
+  code = code.replace(attributes, '<span class="attribute">$1</span>');
+  
+  return code;
+}
+
+function highlightCSS(code) {
+  const selectors = /^([.#]?[a-zA-Z][a-zA-Z0-9-_]*)/gm;
+  const properties = /\b([a-z-]+)(?=\s*:)/g;
+  const strings = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+  const comments = /(\/\*[\s\S]*?\*\/)/g;
+  const numbers = /\b(\d+\.?\d*(?:px|em|rem|%|vh|vw|pt)?)\b/g;
+  const colors = /(#[0-9a-fA-F]{3,6})/g;
+  
+  code = code.replace(comments, '<span class="comment">$1</span>');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(colors, '<span class="number">$1</span>');
+  code = code.replace(numbers, '<span class="number">$1</span>');
+  code = code.replace(properties, '<span class="property">$1</span>');
+  code = code.replace(selectors, '<span class="selector">$1</span>');
+  
+  return code;
+}
+
+function highlightJSON(code) {
+  const keys = /("(?:[^"\\]|\\.)*")(\s*:)/g;
+  const strings = /("(?:[^"\\]|\\.)*")/g;
+  const numbers = /\b(-?\d+\.?\d*)\b/g;
+  const booleans = /\b(true|false|null)\b/g;
+  
+  code = code.replace(keys, '<span class="json-key">$1</span>$2');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(booleans, '<span class="keyword">$1</span>');
+  code = code.replace(numbers, '<span class="number">$1</span>');
+  
+  return code;
+}
+
+function highlightBash(code) {
+  const keywords = /\b(if|then|else|elif|fi|case|esac|for|while|do|done|function|return|exit|export|source|alias|echo|cd|ls|mkdir|rm|cp|mv|cat|grep|sed|awk|sudo)\b/g;
+  const strings = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+  const comments = /(#.*$)/gm;
+  const variables = /(\$[a-zA-Z_][a-zA-Z0-9_]*|\$\{[^}]+\})/g;
+  
+  code = code.replace(comments, '<span class="comment">$1</span>');
+  code = code.replace(strings, '<span class="string">$1</span>');
+  code = code.replace(variables, '<span class="variable">$1</span>');
+  code = code.replace(keywords, '<span class="keyword">$1</span>');
+  
+  return code;
+}
+
 
 // === TYPE TEXT (pour parties non code) ===
 async function typeText(text) {
