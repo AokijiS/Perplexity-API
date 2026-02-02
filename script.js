@@ -259,7 +259,7 @@ async function handleCommand(command) {
   }
 
   if (command.startsWith('setpersona ')) {
-    const name = command.split(' ');[11]
+    const name = command.split(' ')[1];
     if (PERSONAS[name]) {
       currentPersona = PERSONAS[name];
       writeLine(`✅ Persona: ${name}`, 'success');
@@ -281,7 +281,7 @@ async function handleCommand(command) {
     ];
     writeLine('🤖 Models:', 'system');
     models.forEach(m => {
-      const active = currentModel === m ? ' (active)' : '';
+      const active = m === currentModel ? ' (active)' : '';
       writeLine(`  ${m}${active}`, 'system');
     });
     writeLine('→ model sonar-pro', 'system');
@@ -289,7 +289,7 @@ async function handleCommand(command) {
   }
 
   if (command.startsWith('model ')) {
-    const name = command.split(' ');[11]
+    const name = command.split(' ')[1];
     const valid = [
       'sonar-pro',
       'llama-3.1-sonar-large-128k-online',
@@ -325,7 +325,7 @@ function fileToBase64(file) {
 function getFileTextContent(base64Data) {
   return new Promise((resolve, reject) => {
     try {
-      const byteCharacters = atob(base64Data.split(','));[11]
+      const byteCharacters = atob(base64Data.split(',')[1]);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -363,9 +363,9 @@ async function askAI(question) {
         writeLine(`❌ ${fileData.name} > 50MB, skipped`, "error");
         continue;
       }
-      const base64Only = fileData.base64.split(',');[11]
+      const base64Only = fileData.base64.split(',')[1];
 
-      // Pour images: type image_url, pour docs: file_base64 (conforme docs Perplexity)[2][7]
+      // Pour images: type image_url, pour docs: file_base64 (conforme docs Perplexity)
       if (fileData.type.startsWith("image/")) {
         userContent.push({
           type: "image_url",
@@ -414,8 +414,8 @@ async function askAI(question) {
 
     const data = await response.json();
 
-    // data.choices.message.content peut être string ou array selon config[6]
-    const content = data.choices.message.content;
+    // FIX: L'API retourne data.choices[0].message.content
+    const content = data.choices[0].message.content;
     if (typeof content === "string") {
       await renderAIResponse(content);
     } else if (Array.isArray(content)) {
@@ -428,7 +428,7 @@ async function askAI(question) {
       await renderAIResponse(String(content));
     }
 
-    // Option: on garde les fichiers pour d’autres questions ou on les clear
+    // Option: on garde les fichiers pour d'autres questions ou on les clear
     // uploadedFiles = [];
     // writeLine("Cleared files.", "system");
   } catch (err) {
@@ -472,8 +472,8 @@ function splitTextAndCode(text) {
     }
     parts.push({
       type: 'code',
-      language: match[11] || 'code',
-      content: match.trim()[12]
+      language: match[1] || 'code',
+      content: match[2].trim()
     });
     lastIndex = regex.lastIndex;
   }
