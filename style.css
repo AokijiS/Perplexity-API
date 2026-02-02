@@ -189,3 +189,53 @@ body {
   font-size: 13px;
 }
 
+
+/* Syntax Highlighting Colors (VS Code Dark+ theme) */
+.keyword {
+  color: #569cd6; /* Blue for keywords */
+}
+
+.string {
+  color: #ce9178; /* Orange for strings */
+}
+
+.comment {
+  color: #6a9955; /* Green for comments */
+  font-style: italic;
+}
+
+.number {
+  color: #b5cea8; /* Light green for numbers */
+}
+
+.function {
+  color: #dcdcaa; /* Yellow for functions */
+}
+
+.variable {
+  color: #9cdcfe; /* Light blue for variables */
+}
+
+.tag {
+  color: #569cd6; /* Blue for HTML tags */
+}
+
+.attribute {
+  color: #9cdcfe; /* Light blue for attributes */
+}
+
+.property {
+  color: #9cdcfe; /* Light blue for CSS properties */
+}
+
+.selector {
+  color: #d7ba7d; /* Gold for CSS selectors */
+}
+
+.annotation {
+  color: #4ec9b0; /* Cyan for annotations/decorators */
+}
+
+.json-key {
+  color: #9cdcfe; /* Light blue for JSON keys */
+}
